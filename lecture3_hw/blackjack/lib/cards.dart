@@ -26,7 +26,7 @@ enum CardValue {
   queen(weight: 10, stringRepresentation: 'Q'),
   king(weight: 10, stringRepresentation: 'K'),
   ace(weight: 11, stringRepresentation: 'A'),
-  smallAce(weight: 11, stringRepresentation: 'A');
+  smallAce(weight: 1, stringRepresentation: 'A');
 
   const CardValue({
     required this.weight,
@@ -56,7 +56,20 @@ class Card {
 class Hand {
   List<Card> cards;
 
-  Hand(this.cards);
+  Hand(this.cards) {
+    if (cards[0].cardValue == CardValue.ace && cards[1].cardValue == CardValue.ace) {
+      _tryToFixAce();
+    }
+  }
+
+  void _tryToFixAce() {
+    if (getScore > 21) {
+      int aceIndex = cards.indexWhere((card) => card.cardValue == CardValue.ace);
+      if (aceIndex != -1) {
+        cards[aceIndex] = Card(CardValue.smallAce, cards[aceIndex].cardSuit);
+      }
+    }
+  }
 
   @override
   String toString() {
@@ -67,13 +80,15 @@ class Hand {
     return stringHand;
   }
 
-  // TODO: create logic with Aces on hand (11 or 1 weights)
   int get getScore {
     int score = cards.fold(0, (a, b) => a + b.weight);
     return score;
   }
 
-  void putCard(Card card) => cards.add(card);
+  void putCard(Card card) {
+    cards.add(card);
+    _tryToFixAce();
+  }
 }
 
 

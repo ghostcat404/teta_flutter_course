@@ -72,6 +72,9 @@ void main(List<String> arguments) {
         if (gamerDecision == '1') {
           gamer.putCardIntoHand(playingDeck.getCard);
           printGameStep(dealer.stringHand, gamer.stringHand);
+          print('Gamer score: ${gamer.getScore}');
+          print('Dealer score: ${dealer.getScore}');
+          print(delimiter);
         }
         if (gamer.getScore > 21) {
           dealerWinFlg = true;
@@ -104,5 +107,6 @@ void main(List<String> arguments) {
       printDraw();
     }
     continueGame = stdin.readLineSync();
+    print(delimiter);
   }
 }
