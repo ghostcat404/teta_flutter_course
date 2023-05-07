@@ -20,17 +20,20 @@ void printGameStep(String dealerHand, String gamerHand) {
     print(delimiter);
 }
 
+
 void printDealerWin() {
   print(dealerWin);
   print(delimiter);
   print(continueQuestion);
 }
 
+
 void printGamerWin() {
   print(gamerWin);
   print(delimiter);
   print(continueQuestion);
 }
+
 
 void printDraw() {
   print(drawWin);

@@ -22,7 +22,6 @@ class Dealer extends Person {
 
   Dealer(super.hand);
 
-  // TODO: create dealer logic
   @override
   String decide() {
     if (hand.getScore <= 16) {
