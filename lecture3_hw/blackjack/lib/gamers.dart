@@ -56,11 +56,10 @@ class Gamer extends Person {
   @override
   String decide() {
     String? decision = stdin.readLineSync()?.trim();
-    // TODO: refactor
-    if (decision != '1' || decision != '0') {
-      decision = 'illegal';
+    if (decision != '1' || decision != '2' || decision == null) {
+      decision = '2';
     }
-    return decision ?? 'illegal';
+    return decision;
   }
   @override
   String get stringHand => hand.toString();
