@@ -11,7 +11,7 @@ const String gamerWin = 'Игрок победил';
 const String dealerWin = 'Дилер победил';
 const String drawWin = 'Произошла Ничья';
 const String gameStart = 'Раздача:';
-const String continueQuestion = 'Играть еще? (y/N)';
+const String continueQuestion = 'Играть еще? (Y/n)';
 
 
 void printGameStep(String dealerHand, String gamerHand) {
@@ -41,16 +41,20 @@ void printDraw() {
 
 void main(List<String> arguments) {
   String? continueGame = 'y';
-  bool dealerWinFlg = false;
-  bool gamerWinFlg = false;
 
   while (continueGame == 'y') {
     print(gameStart);
+
+    bool dealerWinFlg = false;
+    bool gamerWinFlg = false;
+
     PlayingDeck playingDeck = PlayingDeck();
     playingDeck.shuffleDeck();
     Gamer gamer = Gamer(Hand([playingDeck.getCard, playingDeck.getCard]));
     Dealer dealer = Dealer(Hand([playingDeck.getCard, playingDeck.getCard]));
+
     printGameStep(dealer.stringHand, gamer.stringHand);
+
     if (gamer.getScore > 21 || dealer.getScore == 21) {
       dealerWinFlg = true;
     }
@@ -59,7 +63,7 @@ void main(List<String> arguments) {
     }
     else {
       String? gamerDecision = '1';
-      while (gamerDecision == '1' && dealerWinFlg == false) {
+      while (gamerDecision == '1' && dealerWinFlg == false && gamerWinFlg == false) {
         print(gamerTurn);
         gamerDecision = stdin.readLineSync();
         if (gamerDecision == null || gamerDecision == '') {
@@ -72,9 +76,6 @@ void main(List<String> arguments) {
         if (gamerDecision == '1') {
           gamer.putCardIntoHand(playingDeck.getCard);
           printGameStep(dealer.stringHand, gamer.stringHand);
-          print('Gamer score: ${gamer.getScore}');
-          print('Dealer score: ${dealer.getScore}');
-          print(delimiter);
         }
         if (gamer.getScore > 21) {
           dealerWinFlg = true;
@@ -85,16 +86,29 @@ void main(List<String> arguments) {
       }
       if (dealerWinFlg != true) {
         dealer.isMyTurn = 1;
+        String dealerDecision = '1';
+        print(dealerTurn);
         printGameStep(dealer.stringHand, gamer.stringHand);
-        print(delimiter);
-        print('Dealer get cards');
-        print(delimiter);
+        while (dealerDecision == '1' && dealerWinFlg == false && gamerWinFlg == false) {
+          dealerDecision = dealer.decide();
+          if (dealerDecision == '1') {
+            print(dealerTurn);
+            dealer.putCardIntoHand(playingDeck.getCard);
+            printGameStep(dealer.stringHand, gamer.stringHand);
+          }
+          if (dealer.getScore == 21) {
+            dealerWinFlg = true;
+          }
+          if (dealer.getScore > 21) {
+            gamerWinFlg = true;
+          }
+        }
       }
     }
-    if (dealer.getScore > gamer.getScore) {
+    if (dealer.getScore > gamer.getScore && gamerWinFlg == false) {
       dealerWinFlg = true;
     }
-    if (gamer.getScore > dealer.getScore) {
+    if (gamer.getScore > dealer.getScore && dealerWinFlg == false) {
       gamerWinFlg = true;
     }
     if (dealerWinFlg == true) {
@@ -106,7 +120,7 @@ void main(List<String> arguments) {
     else {
       printDraw();
     }
-    continueGame = stdin.readLineSync();
+    continueGame = stdin.readLineSync() == '' ? 'y':'n';
     print(delimiter);
   }
 }
