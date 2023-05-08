@@ -93,60 +93,17 @@ class Hand {
 
 
 class PlayingDeck {
-  final List deck = <Card>[
-    Card(CardValue.ace, CardSuit.club),
-    Card(CardValue.ace, CardSuit.spade),
-    Card(CardValue.ace, CardSuit.diamond),
-    Card(CardValue.ace, CardSuit.heart),
-    Card(CardValue.two, CardSuit.club),
-    Card(CardValue.two, CardSuit.spade),
-    Card(CardValue.two, CardSuit.diamond),
-    Card(CardValue.two, CardSuit.heart),
-    Card(CardValue.three, CardSuit.club),
-    Card(CardValue.three, CardSuit.spade),
-    Card(CardValue.three, CardSuit.diamond),
-    Card(CardValue.three, CardSuit.heart),
-    Card(CardValue.four, CardSuit.club),
-    Card(CardValue.four, CardSuit.spade),
-    Card(CardValue.four, CardSuit.diamond),
-    Card(CardValue.four, CardSuit.heart),
-    Card(CardValue.five, CardSuit.club),
-    Card(CardValue.five, CardSuit.spade),
-    Card(CardValue.five, CardSuit.diamond),
-    Card(CardValue.five, CardSuit.heart),
-    Card(CardValue.six, CardSuit.club),
-    Card(CardValue.six, CardSuit.spade),
-    Card(CardValue.six, CardSuit.diamond),
-    Card(CardValue.six, CardSuit.heart),
-    Card(CardValue.seven, CardSuit.club),
-    Card(CardValue.seven, CardSuit.spade),
-    Card(CardValue.seven, CardSuit.diamond),
-    Card(CardValue.seven, CardSuit.heart),
-    Card(CardValue.eight, CardSuit.club),
-    Card(CardValue.eight, CardSuit.spade),
-    Card(CardValue.eight, CardSuit.diamond),
-    Card(CardValue.eight, CardSuit.heart),
-    Card(CardValue.nine, CardSuit.club),
-    Card(CardValue.nine, CardSuit.spade),
-    Card(CardValue.nine, CardSuit.diamond),
-    Card(CardValue.nine, CardSuit.heart),
-    Card(CardValue.ten, CardSuit.club),
-    Card(CardValue.ten, CardSuit.spade),
-    Card(CardValue.ten, CardSuit.diamond),
-    Card(CardValue.ten, CardSuit.heart),
-    Card(CardValue.jack, CardSuit.club),
-    Card(CardValue.jack, CardSuit.spade),
-    Card(CardValue.jack, CardSuit.diamond),
-    Card(CardValue.jack, CardSuit.heart),
-    Card(CardValue.queen, CardSuit.club),
-    Card(CardValue.queen, CardSuit.spade),
-    Card(CardValue.queen, CardSuit.diamond),
-    Card(CardValue.queen, CardSuit.heart),
-    Card(CardValue.king, CardSuit.club),
-    Card(CardValue.king, CardSuit.spade),
-    Card(CardValue.king, CardSuit.diamond),
-    Card(CardValue.king, CardSuit.heart),
-  ];
+  List<Card> deck = [];
+
+  PlayingDeck() {
+    for (CardValue cardValue in CardValue.values) {
+      for (CardSuit cardSuit in CardSuit.values) {
+        if (cardValue != CardValue.smallAce) {
+          deck.add(Card(cardValue, cardSuit));
+        }
+      }
+    }
+  }
 
   void shuffleDeck() => deck.shuffle();
   Card get getCard => deck.removeAt(0);
