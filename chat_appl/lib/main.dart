@@ -1,6 +1,5 @@
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/services/database_service.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,7 +10,7 @@ import 'package:string_to_hex/string_to_hex.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
+  FirebaseApp firebaseApp = await Firebase.initializeApp(
     name: "chat_appl",
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -21,12 +20,13 @@ void main() async {
     uuId = const Uuid().v4();
     prefs.setString('uuid', uuId);
   }
-  runApp(MyApp(uuId: uuId,));
+  runApp(MyApp(uuId: uuId, firebaseApp: firebaseApp,));
 }
 
 class MyApp extends StatelessWidget {
   final String uuId;
-  const MyApp({super.key, required this.uuId});
+  final FirebaseApp firebaseApp;
+  const MyApp({super.key, required this.uuId, required this.firebaseApp});
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +35,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: MyHomePage(title: 'Chat', uuId: uuId),
+      home: MyHomePage(title: 'Chat', uuId: uuId, firebaseApp: firebaseApp,),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   final String uuId;
-  const MyHomePage({super.key, required this.title, required this.uuId});
+  final FirebaseApp firebaseApp;
+  const MyHomePage({super.key, required this.title, required this.uuId, required this.firebaseApp});
 
   final String title;
 
@@ -52,10 +53,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
-  final _dbRef = FirebaseDatabase.instance.ref('messages');
+  // final _dbRef = FirebaseDatabase.instance.ref('messages');
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final DatabaseService _dbService = DatabaseService(firebaseApp: widget.firebaseApp);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -97,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             const SizedBox(width: 6,),
                             Text(
                               timeago.format(
-                                DateTime.fromMillisecondsSinceEpoch(int.parse(messageList[index].timestamp))
+                                DateTime.fromMillisecondsSinceEpoch(messageList[index].timestamp)
                               ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w400,
@@ -125,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
             return const Text('No Messages');
           }
         },
-        stream: _dbRef.onValue,
+        stream: _dbService.dbRef.onValue,
       ),
       bottomNavigationBar: Padding(
         padding: MediaQuery.of(context).viewInsets,
@@ -147,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             IconButton(
               onPressed: () {
-                DatabaseService().sendMessage(_controller.text, widget.uuId);
+                _dbService.sendMessage(_controller.text, widget.uuId);
                 _controller.text = '';
               },
               icon: const Icon(Icons.send)
