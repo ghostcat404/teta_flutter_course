@@ -63,29 +63,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final DatabaseService _dbService = DatabaseService(firebaseApp: widget.firebaseApp);
+    final dbService = DatabaseService(firebaseApp: widget.firebaseApp);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
       body: StreamBuilder(
         builder: (context, snapshot) {
-          List<Message> messageList = [];
           if (
             snapshot.hasData
             && snapshot.data != null
-            && (snapshot.data!).snapshot.value != null
+            && (snapshot.data!).isNotEmpty
           ) {
-            final firebaseMessages = Map<dynamic, dynamic>.from((snapshot.data!).snapshot.value as Map<dynamic, dynamic>);
-            firebaseMessages.forEach((key, value) {
-              final currentMessage = Map<String, dynamic>.from(value);
-              messageList.add(Message.fromMap(currentMessage));
-            });
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: ListView.builder(
                 reverse: true,
-                itemCount: messageList.length,
+                itemCount: (snapshot.data!).length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -95,17 +89,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                           children: [
                             Text(
-                              messageList[index].userId.substring(0, 8),
+                              (snapshot.data!)[index].userId.substring(0, 8),
                               // messageList[index].userId,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Color(StringToHex.toColor(messageList[index].userId))
+                                color: Color(StringToHex.toColor((snapshot.data!)[index].userId))
                               ),
                             ),
                             const SizedBox(width: 6,),
                             Text(
                               timeago.format(
-                                DateTime.fromMillisecondsSinceEpoch(messageList[index].timestamp)
+                                DateTime.fromMillisecondsSinceEpoch((snapshot.data!)[index].timestamp)
                               ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w400,
@@ -119,21 +113,20 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 8
                         ),
                         Text(
-                          messageList[index].text,
+                          (snapshot.data!)[index].text,
                           style: const TextStyle(fontSize: 16.0),
                         )
                       ]
                     ),
                   );
                 },
-
               )
             );
           } else {
             return const Text('No Messages');
           }
         },
-        stream: _dbService.dbRef.onValue,
+        stream: dbService.messageStream,
       ),
       bottomNavigationBar: Padding(
         padding: MediaQuery.of(context).viewInsets,
@@ -155,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             IconButton(
               onPressed: () {
-                _dbService.sendMessage(_controller.text, widget.uuId);
+                dbService.sendMessage(_controller.text, widget.uuId);
                 _controller.text = '';
               },
               icon: const Icon(Icons.send)

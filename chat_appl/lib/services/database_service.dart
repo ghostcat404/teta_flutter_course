@@ -19,4 +19,16 @@ class DatabaseService {
     final messageRef = dbRef.push();
     await messageRef.set(message.toJson());
   }
+
+  Stream<List<Message>> get messageStream => dbRef.onValue.map((event) {
+    List<Message> messageList = [];
+    if (event.snapshot.value != null) {
+      final firebaseMessages = Map<dynamic, dynamic>.from(event.snapshot.value as Map<dynamic, dynamic>);
+      firebaseMessages.forEach((key, value) {
+        final currentMessage = Map<String, dynamic>.from(value);
+        messageList.add(Message.fromMap(currentMessage));
+      });
+    }
+    return messageList;
+  });
 }
