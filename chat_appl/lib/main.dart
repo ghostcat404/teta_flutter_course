@@ -43,10 +43,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   final String uuId;
   final FirebaseApp firebaseApp;
-  late DatabaseService dbService;
-  MyHomePage({super.key, required this.title, required this.uuId, required this.firebaseApp}) {
-    dbService = DatabaseService(firebaseApp: firebaseApp);
-  }
+  const MyHomePage({super.key, required this.title, required this.uuId, required this.firebaseApp});
 
   final String title;
 
@@ -56,6 +53,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
+  late DatabaseService dbService;
   // final _dbRef = FirebaseDatabase.instance.ref('messages');
 
   @override
@@ -65,7 +63,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    dbService = DatabaseService(firebaseApp: widget.firebaseApp);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -128,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
             return const Text('No Messages');
           }
         },
-        stream: widget.dbService.messageStream,
+        stream: dbService.messageStream,
       ),
       bottomNavigationBar: Padding(
         padding: MediaQuery.of(context).viewInsets,
@@ -150,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             IconButton(
               onPressed: () {
-                widget.dbService.sendMessage(_controller.text, widget.uuId);
+                dbService.sendMessage(_controller.text, widget.uuId);
                 _controller.text = '';
               },
               icon: const Icon(Icons.send)
