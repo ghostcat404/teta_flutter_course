@@ -1,4 +1,3 @@
-import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -54,7 +53,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
   late DatabaseService dbService;
-  // final _dbRef = FirebaseDatabase.instance.ref('messages');
 
   @override
   void dispose() {

@@ -26,7 +26,7 @@ class DatabaseService {
       final firebaseMessages = Map<dynamic, dynamic>.from(event.snapshot.value as Map<dynamic, dynamic>);
       firebaseMessages.forEach((key, value) {
         final currentMessage = Map<String, dynamic>.from(value);
-        messageList.add(Message.fromMap(currentMessage));
+        messageList.add(Message.fromJson(currentMessage));
       });
     }
     return messageList;
