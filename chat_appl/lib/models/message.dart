@@ -15,5 +15,4 @@ class Message with _$Message {
   
   @override
   Map<String, dynamic> toJson() => {'userId': userId, 'text': text, 'timestamp': timestamp};
-  // factory Message.fromMap(Map<dynamic, dynamic> data) => _$MessageFromMap(data);
 }

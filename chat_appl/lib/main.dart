@@ -95,7 +95,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             Text(
                               (snapshot.data!)[index].userId.substring(0, 8),
-                              // messageList[index].userId,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Color(StringToHex.toColor((snapshot.data!)[index].userId))
