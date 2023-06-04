@@ -1,4 +1,5 @@
-import 'package:chat_appl/screens/chat_screens.dart';
+import 'package:chat_appl/screens/dialog_screen.dart';
+import 'package:chat_appl/screens/typing_field.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -93,20 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: MediaQuery.of(context).viewInsets,
         child: Row(
           children: [
-            Expanded(
-              child: BottomAppBar(
-                child: TextField(
-                  controller: _controller,
-                  style: const TextStyle(fontSize: 16.0),
-                  decoration: const InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    labelText: 'Message',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
-                  )
-                )
-              ),
-            ),
+            TypingField(controller: _controller),
             IconButton(
               onPressed: () {
                 dbService.sendMessage(_controller.text, widget.uuId);
