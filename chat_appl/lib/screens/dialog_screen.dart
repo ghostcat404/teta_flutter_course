@@ -16,6 +16,7 @@ class _MessagesViewState extends State<MessagesView> {
 
   @override
   Widget build(BuildContext context) {
+    widget.messageList.sort((b, a) => a.timestamp.compareTo(b.timestamp));
     return ListView.builder(
       reverse: true,
       itemCount: widget.messageList.length,
