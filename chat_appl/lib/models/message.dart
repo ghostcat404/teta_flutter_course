@@ -1,19 +1,15 @@
-class Message {
-  final String userId;
-  final String text;
-  final int timestamp;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  Message({required this.userId, required this.text, required this.timestamp});
+part 'message.freezed.dart';
+part 'message.g.dart';
 
-  Message.fromJson(Map<dynamic, dynamic> json)
-    : userId = json['userId'],
-      text = json['text'],
-      timestamp = json['timestamp'];
-  
-  Map<dynamic, dynamic> toJson() => {'userId': userId, 'text': text, 'timestamp': timestamp};
+@freezed
+class Message with _$Message {
+  const factory Message({
+    required String userId,
+    required String text,
+    required int timestamp
+  }) = _Message;
 
-  Message.fromMap(Map<dynamic, dynamic> data)
-    : userId = data['userId'],
-      text = data['text'],
-      timestamp = data['timestamp'];
+  factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 }

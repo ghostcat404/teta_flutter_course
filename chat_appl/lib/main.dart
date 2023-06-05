@@ -1,12 +1,11 @@
-import 'package:chat_appl/models/message.dart';
+import 'package:chat_appl/screens/dialog_screen.dart';
+import 'package:chat_appl/screens/typing_field.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'firebase_options.dart';
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:string_to_hex/string_to_hex.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,7 +53,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
   late DatabaseService dbService;
-  // final _dbRef = FirebaseDatabase.instance.ref('messages');
 
   @override
   void dispose() {
@@ -84,50 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ) {
             return Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ListView.builder(
-                reverse: true,
-                itemCount: (snapshot.data!).length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              (snapshot.data!)[index].userId.substring(0, 8),
-                              // messageList[index].userId,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(StringToHex.toColor((snapshot.data!)[index].userId))
-                              ),
-                            ),
-                            const SizedBox(width: 6,),
-                            Text(
-                              timeago.format(
-                                DateTime.fromMillisecondsSinceEpoch((snapshot.data!)[index].timestamp)
-                              ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black,
-                                fontSize: 13.0,
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 8
-                        ),
-                        Text(
-                          (snapshot.data!)[index].text,
-                          style: const TextStyle(fontSize: 16.0),
-                        )
-                      ]
-                    ),
-                  );
-                },
-              )
+              child: MessagesView(messageList: (snapshot.data!)),
             );
           } else {
             return const Text('No Messages');
@@ -139,20 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: MediaQuery.of(context).viewInsets,
         child: Row(
           children: [
-            Expanded(
-              child: BottomAppBar(
-                child: TextField(
-                  controller: _controller,
-                  style: const TextStyle(fontSize: 16.0),
-                  decoration: const InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    labelText: 'Message',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
-                  )
-                )
-              ),
-            ),
+            TypingField(controller: _controller),
             IconButton(
               onPressed: () {
                 dbService.sendMessage(_controller.text, widget.uuId);
