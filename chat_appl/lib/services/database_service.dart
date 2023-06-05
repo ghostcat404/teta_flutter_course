@@ -28,6 +28,7 @@ class DatabaseService {
         final currentMessage = Map<String, dynamic>.from(value);
         messageList.add(Message.fromJson(currentMessage));
       });
+      messageList.sort((b, a) => a.timestamp.compareTo(b.timestamp));
     }
     return messageList;
   });

@@ -12,7 +12,4 @@ class Message with _$Message {
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
-  
-  @override
-  Map<String, dynamic> toJson() => {'userId': userId, 'text': text, 'timestamp': timestamp};
 }
