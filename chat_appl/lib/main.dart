@@ -7,8 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'firebase_options.dart';
-// TODO: add first user profile setting
-// TODO: add stram builder for users
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseApp firebaseApp = await Firebase.initializeApp(
