@@ -40,20 +40,14 @@ class DatabaseService {
     await messageRef.set(message.toJson());
   }
 
-  Stream<List<dynamic>> _getStreamByRef(String refName) {
+  Stream<List<T?>> _getStreamByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
-      List<dynamic> dataList = [];
+      List<T?> dataList = [];
       if (event.snapshot.value != null) {
         final firebaseMessages = Map<dynamic, dynamic>.from(event.snapshot.value as Map<dynamic, dynamic>);
         firebaseMessages.forEach((key, value) {
           final currentData = Map<String, dynamic>.from(value);
-          late dynamic instance;
-          if (refName == 'users') {
-            instance = User.fromJson(currentData);
-          }
-          else if (refName == 'messages') {
-            instance = Message.fromJson(currentData);
-          }
+          final T? instance = createInstanceOf<T>(currentData);
           dataList.add(instance);
         });
       }
@@ -61,6 +55,16 @@ class DatabaseService {
     });
   }
 
-  Stream<List<dynamic>> get messageStream => _getStreamByRef('messages');
-  Stream<List<dynamic>> get contactsStream => _getStreamByRef('users');
+  Stream<List<dynamic>> get messageStream => _getStreamByRef<Message>('messages');
+  Stream<List<dynamic>> get contactsStream => _getStreamByRef<User>('users');
+}
+
+T? createInstanceOf<T>(Map<String, dynamic> json) {
+  final factories = <Type, T Function(Map<String, dynamic>)>{
+    User: (Map<String, dynamic> json) => User.fromJson(json) as T, 
+    Message: (Map<String, dynamic> json) => Message.fromJson(json) as T,
+  };
+
+  final instance = factories[T];
+  return instance?.call(json);
 }
