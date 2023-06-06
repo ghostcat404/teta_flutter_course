@@ -1,7 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 
 class ContactsPage extends StatefulWidget {
-  const ContactsPage({super.key});
+  final DatabaseService dbService;
+
+  const ContactsPage({super.key, required this.dbService});
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
@@ -14,22 +19,48 @@ class _ContactsPageState extends State<ContactsPage> {
       appBar: AppBar(
         title: const Text('Contacts'),
       ),
-      body: ListView(
-        children: const <Widget>[
-          ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-          ),
-          ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-          ),
-          ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-          ),
-        ],
-      ),
+      body: StreamBuilder(
+        builder: (context, snapshot) {
+          if (
+            snapshot.hasData
+            && snapshot.data != null
+            && snapshot.data!.isNotEmpty
+          ) {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                final User user = snapshot.data![index];
+                bool hasAvatar = false;
+                if (user.photoUrl != '') {
+                  hasAvatar = true;
+                }
+                return ListTile(
+                  leading: hasAvatar
+                    ? CachedNetworkImage(
+                        imageUrl: user.photoUrl,
+                        progressIndicatorBuilder: (context, url, downloadProgress) => 
+                          CircularProgressIndicator(value: downloadProgress.progress),
+                        imageBuilder: (context, imageProvider) => CircleAvatar(
+                          radius: 32,
+                          backgroundImage: imageProvider,
+                          backgroundColor: Colors.transparent,
+                        ),
+                      )
+                    : const CircleAvatar(
+                        radius: 32,
+                        backgroundImage: AssetImage('assets/default_avatar.png'),
+                        backgroundColor: Colors.transparent,
+                      ),
+                  title: Text(user.displayName),
+                );
+              }
+            );
+          } else {
+            return const Text('No Contacts');
+          }
+        },
+        stream: widget.dbService.contactsStream,
+      )
     );
   }
 }

@@ -1,5 +1,3 @@
-// import 'package:chat_appl/screens/dialog_screen.dart';
-// import 'package:chat_appl/screens/typing_field.dart';
 import 'package:chat_appl/pages/chats_page.dart';
 import 'package:chat_appl/pages/contacts_page.dart';
 import 'package:chat_appl/pages/settings_page.dart';
@@ -9,7 +7,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'firebase_options.dart';
-
+// TODO: add first user profile setting
+// TODO: add stram builder for users
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseApp firebaseApp = await Firebase.initializeApp(
@@ -75,12 +74,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
-      // appBar: AppBar(
-      //   // title: Text(widget.title),
-      // ),
       body: <Widget>[
-        ContactsPage(),
-        ChatsPage(),
+        ContactsPage(dbService: dbService,),
+        ChatsPage(dbService: dbService,),
         SettingsPage(dbService: dbService,),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(

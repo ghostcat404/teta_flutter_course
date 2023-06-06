@@ -40,16 +40,27 @@ class DatabaseService {
     await messageRef.set(message.toJson());
   }
 
-  Stream<List<Message>> get messageStream => dbInstance.ref('messages').onValue.map((event) {
-    List<Message> messageList = [];
-    if (event.snapshot.value != null) {
-      final firebaseMessages = Map<dynamic, dynamic>.from(event.snapshot.value as Map<dynamic, dynamic>);
-      firebaseMessages.forEach((key, value) {
-        final currentMessage = Map<String, dynamic>.from(value);
-        messageList.add(Message.fromJson(currentMessage));
-      });
-      messageList.sort((b, a) => a.timestamp.compareTo(b.timestamp));
-    }
-    return messageList;
-  });
+  Stream<List<dynamic>> _getStreamByRef(String refName) {
+    return dbInstance.ref(refName).onValue.map((event) {
+      List<dynamic> dataList = [];
+      if (event.snapshot.value != null) {
+        final firebaseMessages = Map<dynamic, dynamic>.from(event.snapshot.value as Map<dynamic, dynamic>);
+        firebaseMessages.forEach((key, value) {
+          final currentData = Map<String, dynamic>.from(value);
+          late dynamic instance;
+          if (refName == 'users') {
+            instance = User.fromJson(currentData);
+          }
+          else if (refName == 'messages') {
+            instance = Message.fromJson(currentData);
+          }
+          dataList.add(instance);
+        });
+      }
+      return dataList;
+    });
+  }
+
+  Stream<List<dynamic>> get messageStream => _getStreamByRef('messages');
+  Stream<List<dynamic>> get contactsStream => _getStreamByRef('users');
 }

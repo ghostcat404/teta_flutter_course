@@ -38,11 +38,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   _loadAvatar() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? avatarURL = prefs.getString('photoUrl');
-    if (avatarURL != null && avatarURL != '') {
+    final String? avatarUrl = prefs.getString('photoUrl');
+    if (avatarUrl != null && avatarUrl != '') {
       setState(() {
         _isAvatar = true;
-        _avatarURL = avatarURL;
+        _avatarURL = avatarUrl;
       });
     } else {
       await prefs.setString('photoUrl', '');
@@ -52,7 +52,13 @@ class _SettingsPageState extends State<SettingsPage> {
   _loadName() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? prefsDisplayName = prefs.getString('displayName');
-    final String displayName = prefsDisplayName ?? prefs.getString('uuid')!.substring(0, 8);
+    late String displayName;
+    if (prefsDisplayName == null) {
+      displayName = prefs.getString('uuid')!.substring(0, 8);
+      widget.dbService.updateUserInfo(displayName: displayName);
+    } else {
+      displayName = prefsDisplayName;
+    }
     setState(() {
       _displayName = displayName;
     });
@@ -136,7 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   )
                 : const CircleAvatar(
                     radius: 32,
-                    backgroundImage: AssetImage('assets/default_avatar.png'), // _isAvatar ? Image.network(_avatarURL) : SEE cached_image_network
+                    backgroundImage: AssetImage('assets/default_avatar.png'),
                     backgroundColor: Colors.transparent,
                   ),
             ),
