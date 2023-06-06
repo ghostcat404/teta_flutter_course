@@ -26,9 +26,10 @@ class _ContactsPageState extends State<ContactsPage> {
             && snapshot.data != null
             && snapshot.data!.isNotEmpty
           ) {
-            return ListView.builder(
+            return ListView.separated(
               itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
+              separatorBuilder: (BuildContext context, int index) => const Divider(),
+              itemBuilder: (BuildContext context, int index) {
                 final User user = snapshot.data![index];
                 bool hasAvatar = false;
                 if (user.photoUrl != '') {
