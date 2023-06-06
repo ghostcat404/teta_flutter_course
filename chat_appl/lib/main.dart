@@ -81,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: <Widget>[
         ContactsPage(),
         ChatsPage(),
-        SettingsPage(),
+        SettingsPage(dbService: dbService,),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {

@@ -1,12 +1,16 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final DatabaseService dbService;
+
+  const SettingsPage({super.key, required this.dbService});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -16,22 +20,42 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isEdit = false;
   bool _isAvatar = false;
   String _avatarURL = '';
+  String _displayName = '';
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     _loadAvatar();
+    _loadName();
   }
 
   _loadAvatar() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? avatarURL = prefs.getString('avatarURL');
-    if (avatarURL != null) {
+    final String? avatarURL = prefs.getString('photoUrl');
+    if (avatarURL != null && avatarURL != '') {
       setState(() {
         _isAvatar = true;
         _avatarURL = avatarURL;
       });
+    } else {
+      await prefs.setString('photoUrl', '');
     }
+  }
+
+  _loadName() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? prefsDisplayName = prefs.getString('displayName');
+    final String displayName = prefsDisplayName ?? prefs.getString('uuid')!.substring(0, 8);
+    setState(() {
+      _displayName = displayName;
+    });
   }
 
   void _edit() {
@@ -40,13 +64,29 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  void _done() {
+  void _done() async {
+    final String displayName = await _updateProfileName();
     setState(() {
+      _displayName = displayName;
       _isEdit = false;
     });
+    _controller.text = '';
   }
 
-  void pickImage() async {
+  Future<String> _updateProfileName() async {
+    late String displayName;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (_controller.text != '') {
+      prefs.setString('displayName', _controller.text);
+      displayName = _controller.text;
+      widget.dbService.updateUserInfo(displayName: displayName);
+    } else {
+      displayName = prefs.getString('displayName')!;
+    }
+    return displayName;
+  }
+
+  void _updateProfileImage() async {
     final ImagePicker picker = ImagePicker();
     // Pick an image.
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -55,10 +95,11 @@ class _SettingsPageState extends State<SettingsPage> {
     Reference ref = FirebaseStorage.instance.ref().child('images').child(image.name);
     await ref.putFile(imageFile);
     final downloadURL = await ref.getDownloadURL();
-    // print(downloadURL);
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('avatarURL', downloadURL);
+    await prefs.setString('photoUrl', downloadURL);
+    widget.dbService.updateUserInfo(photoUrl: downloadURL);
+    _loadAvatar();
   }
 
   @override
@@ -81,24 +122,37 @@ class _SettingsPageState extends State<SettingsPage> {
               height: 64.0,
             ),
             GestureDetector(
-              onTap: pickImage,
-              child: const CircleAvatar(
-                radius: 32,
-                backgroundImage: AssetImage('assets/default_avatar.png'), // _isAvatar ? Image.network(_avatarURL) : SEE cached_image_network
-                backgroundColor: Colors.transparent,
-              ),
+              onTap: _updateProfileImage,
+              child: _isAvatar
+                ? CachedNetworkImage(
+                    imageUrl: _avatarURL,
+                    progressIndicatorBuilder: (context, url, downloadProgress) => 
+                      CircularProgressIndicator(value: downloadProgress.progress),
+                    imageBuilder: (context, imageProvider) => CircleAvatar(
+                      radius: 32,
+                      backgroundImage: imageProvider,
+                      backgroundColor: Colors.transparent,
+                    ),
+                  )
+                : const CircleAvatar(
+                    radius: 32,
+                    backgroundImage: AssetImage('assets/default_avatar.png'), // _isAvatar ? Image.network(_avatarURL) : SEE cached_image_network
+                    backgroundColor: Colors.transparent,
+                  ),
             ),
             const SizedBox(
               height: 16.0,
             ),
             _isEdit
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 64.0),
-                  child: TextField(),
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 64.0),
+                  child: TextField(
+                    controller: _controller,
+                  ),
                 )
-              : const Text(
-                'no_name',
-                style: TextStyle(fontSize: 24.0),
+              : Text(
+                _displayName,
+                style: const TextStyle(fontSize: 24.0),
               ),
           ],
         ),
