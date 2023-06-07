@@ -19,7 +19,7 @@ class _MessagesViewState extends State<MessagesView> {
     return ListView.builder(
       reverse: true,
       itemCount: widget.messageList.length,
-      itemBuilder: (context, index) {
+      itemBuilder: (BuildContext context, int index) {
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
