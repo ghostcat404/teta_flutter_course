@@ -101,38 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      // body: StreamBuilder(
-      //   builder: (context, snapshot) {
-      //     if (
-      //       snapshot.hasData
-      //       && snapshot.data != null
-      //       && (snapshot.data!).isNotEmpty
-      //     ) {
-      //       return Padding(
-      //         padding: const EdgeInsets.all(16.0),
-      //         child: MessagesView(messageList: (snapshot.data!)),
-      //       );
-      //     } else {
-      //       return const Text('No Messages');
-      //     }
-      //   },
-      //   stream: dbService.messageStream,
-      // ),
-      // bottomNavigationBar: Padding(
-      //   padding: MediaQuery.of(context).viewInsets,
-      //   child: Row(
-      //     children: [
-      //       TypingField(controller: _controller),
-      //       IconButton(
-      //         onPressed: () {
-      //           dbService.sendMessage(_controller.text, widget.uuId);
-      //           _controller.text = '';
-      //         },
-      //         icon: const Icon(Icons.send)
-      //       )
-      //     ],
-      //   ),
-      // ),
     );
   }
 }
