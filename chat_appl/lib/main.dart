@@ -4,6 +4,7 @@ import 'package:chat_appl/pages/settings_page.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'firebase_options.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorSchemeSeed: const Color(0xff6750a4),
         useMaterial3: true,
+        textTheme: GoogleFonts.latoTextTheme(),
       ),
       home: MyHomePage(title: 'Chat', uuId: uuId, firebaseApp: firebaseApp,),
     );
