@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 
@@ -36,22 +37,10 @@ class _ContactsPageState extends State<ContactsPage> {
                   hasAvatar = true;
                 }
                 return ListTile(
-                  leading: hasAvatar
-                    ? CachedNetworkImage(
-                        imageUrl: user.photoUrl,
-                        progressIndicatorBuilder: (context, url, downloadProgress) => 
-                          CircularProgressIndicator(value: downloadProgress.progress),
-                        imageBuilder: (context, imageProvider) => CircleAvatar(
-                          radius: 32,
-                          backgroundImage: imageProvider,
-                          backgroundColor: Colors.transparent,
-                        ),
-                      )
-                    : const CircleAvatar(
-                        radius: 32,
-                        backgroundImage: AssetImage('assets/default_avatar.png'),
-                        backgroundColor: Colors.transparent,
-                      ),
+                  leading: ProfileAvatar(
+                    hasAvatar: hasAvatar,
+                    avatarUrl: user.photoUrl,
+                  ),
                   title: Text(user.displayName),
                 );
               }

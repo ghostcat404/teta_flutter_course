@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -129,22 +130,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             GestureDetector(
               onTap: _updateProfileImage,
-              child: _isAvatar
-                ? CachedNetworkImage(
-                    imageUrl: _avatarURL,
-                    progressIndicatorBuilder: (context, url, downloadProgress) => 
-                      CircularProgressIndicator(value: downloadProgress.progress),
-                    imageBuilder: (context, imageProvider) => CircleAvatar(
-                      radius: 32,
-                      backgroundImage: imageProvider,
-                      backgroundColor: Colors.transparent,
-                    ),
-                  )
-                : const CircleAvatar(
-                    radius: 32,
-                    backgroundImage: AssetImage('assets/default_avatar.png'),
-                    backgroundColor: Colors.transparent,
-                  ),
+              child: ProfileAvatar(hasAvatar: _isAvatar, avatarUrl: _avatarURL,)
             ),
             const SizedBox(
               height: 16.0,
