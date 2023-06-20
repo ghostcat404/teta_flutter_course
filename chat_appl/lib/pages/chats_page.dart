@@ -1,3 +1,4 @@
+import 'package:chat_appl/screens/dialog_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -26,35 +27,39 @@ class _ChatsPageState extends State<ChatsPage> {
         title: const Text('Chats'),
       ),
       body: ListView(
-        children: const <Widget>[
+        children: <Widget>[
           ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-            subtitle: Text('Hello!'),
-            trailing: Text('31.05.2023'),
+            leading: const CircleAvatar(child: Text('A')),
+            title: const Text('John Doe'),
+            subtitle: const Text('Hello!'),
+            trailing: const Text('31.05.2023'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => StreamBuilder(
+                    builder: (context, snapshot) {
+                      if (
+                        snapshot.hasData
+                        && snapshot.data != null
+                        && snapshot.data!.isNotEmpty
+                      ) {
+                        return MessagesView(messageList: snapshot.data!);
+                      } else {
+                        return Scaffold(
+                          appBar: AppBar(
+                            title: const Text('Chat with user'),
+                          ),
+                          body: const Center(child: Text('No messages'),),
+                        );
+                      }
+                    },
+                    stream: dbService.messageStream,
+                  ),
+                ),
+              );
+            },
           ),
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-            subtitle: Text('Hello!'),
-            trailing: Text('31.05.2023'),
-          ),
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-            subtitle: Text('Hello!'),
-            trailing: Text('31.05.2023'),
-          ),
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Text('A')),
-            title: Text('John Doe'),
-            subtitle: Text('Hello!'),
-            trailing: Text('31.05.2023'),
-          ),
-          Divider(height: 0),
+          const Divider(height: 0),
         ],
       ),
     );
