@@ -4,16 +4,15 @@ import 'package:string_to_hex/string_to_hex.dart';
 import 'package:flutter/material.dart';
 
 class MessagesView extends StatefulWidget {
-  final List<Message> messageList;
-
   const MessagesView({super.key, required this.messageList});
+
+  final List<Message> messageList;
 
   @override
   State<MessagesView> createState() => _MessagesViewState();
 }
 
 class _MessagesViewState extends State<MessagesView> {
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(

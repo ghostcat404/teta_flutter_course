@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class TypingField extends StatefulWidget {
-  final TextEditingController controller;
   const TypingField({super.key, required this.controller});
+
+  final TextEditingController controller;
 
   @override
   State<TypingField> createState() => _TypingFieldState();

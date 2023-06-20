@@ -25,9 +25,10 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final String uuId;
-  final FirebaseApp firebaseApp;
   const MyApp({super.key, required this.uuId, required this.firebaseApp});
+
+  final FirebaseApp firebaseApp;
+  final String uuId;
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +45,11 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final String uuId;
-  final FirebaseApp firebaseApp;
   const MyHomePage({super.key, required this.title, required this.uuId, required this.firebaseApp});
 
+  final FirebaseApp firebaseApp;
   final String title;
+  final String uuId;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -56,8 +57,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
-  final TextEditingController _controller = TextEditingController();
   late DatabaseService dbService;
+
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {

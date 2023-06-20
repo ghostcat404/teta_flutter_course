@@ -8,20 +8,20 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
-  final DatabaseService dbService;
-
   const SettingsPage({super.key, required this.dbService});
+
+  final DatabaseService dbService;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _isEdit = false;
-  bool _isAvatar = false;
   String _avatarURL = '';
-  String _displayName = '';
   final TextEditingController _controller = TextEditingController();
+  String _displayName = '';
+  bool _isAvatar = false;
+  bool _isEdit = false;
 
   @override
   void dispose() {

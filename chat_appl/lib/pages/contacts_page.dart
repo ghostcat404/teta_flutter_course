@@ -4,9 +4,9 @@ import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 
 class ContactsPage extends StatefulWidget {
-  final DatabaseService dbService;
-
   const ContactsPage({super.key, required this.dbService});
+
+  final DatabaseService dbService;
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
