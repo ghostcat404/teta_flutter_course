@@ -5,14 +5,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseService {
-  final FirebaseApp firebaseApp;
-  late FirebaseDatabase dbInstance;
-
   DatabaseService({required this.firebaseApp}) {
     dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
   }
 
-  Future updateUserInfo({String? displayName, String? photoUrl}) async {
+  late FirebaseDatabase dbInstance;
+  final FirebaseApp firebaseApp;
+
+  Future addOrUpdateUserInfo({String? displayName, String? photoUrl}) async {
     final prefs = await SharedPreferences.getInstance();
     final DatabaseReference dbRef = dbInstance.ref().child('users/${prefs.getString("uuid")}');
     final user = User(
@@ -20,13 +20,7 @@ class DatabaseService {
       displayName: displayName ?? prefs.getString('displayName')!,
       photoUrl: photoUrl ?? prefs.getString('photoUrl')!
     );
-    final snapshot = await dbRef.get();
-    if (snapshot.exists) {
-      await dbRef.update(user.toJson());
-    } else {
-      final userRef = dbRef.push();
-      await userRef.set(user.toJson());
-    }
+    await dbRef.set(user.toJson());
   }
 
   Future sendMessage(String text, String uuid) async {
@@ -39,6 +33,10 @@ class DatabaseService {
     final messageRef = dbRef.push();
     await messageRef.set(message.toJson());
   }
+
+  Stream<List<dynamic>> get messageStream => _getStreamByRef<Message>('messages');
+
+  Stream<List<dynamic>> get contactsStream => _getStreamByRef<User>('users');
 
   Stream<List<T?>> _getStreamByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
@@ -54,9 +52,6 @@ class DatabaseService {
       return dataList;
     });
   }
-
-  Stream<List<dynamic>> get messageStream => _getStreamByRef<Message>('messages');
-  Stream<List<dynamic>> get contactsStream => _getStreamByRef<User>('users');
 }
 
 T? createInstanceOf<T>(Map<String, dynamic> json) {

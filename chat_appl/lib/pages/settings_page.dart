@@ -4,19 +4,20 @@ import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key, required this.dbService});
-
-  final DatabaseService dbService;
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late DatabaseService dbService;
+
   String _avatarURL = '';
   final TextEditingController _controller = TextEditingController();
   String _displayName = '';
@@ -31,6 +32,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void initState() {
+    final GetIt getIt = GetIt.instance;
+    dbService = getIt<DatabaseService>();
     super.initState();
     _loadAvatar();
     _loadName();
@@ -55,7 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
     late String displayName;
     if (prefsDisplayName == null) {
       displayName = prefs.getString('uuid')!.substring(0, 8);
-      widget.dbService.updateUserInfo(displayName: displayName);
+      dbService.addOrUpdateUserInfo(displayName: displayName);
     } else {
       displayName = prefsDisplayName;
     }
@@ -85,7 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (_controller.text != '') {
       prefs.setString('displayName', _controller.text);
       displayName = _controller.text;
-      widget.dbService.updateUserInfo(displayName: displayName);
+      dbService.addOrUpdateUserInfo(displayName: displayName);
     } else {
       displayName = prefs.getString('displayName')!;
     }
@@ -104,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('photoUrl', downloadURL);
-    widget.dbService.updateUserInfo(photoUrl: downloadURL);
+    dbService.addOrUpdateUserInfo(photoUrl: downloadURL);
     _loadAvatar();
   }
 

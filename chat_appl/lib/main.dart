@@ -4,6 +4,7 @@ import 'package:chat_appl/pages/settings_page.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -15,11 +16,17 @@ void main() async {
     name: "chat_appl",
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  final GetIt getIt = GetIt.instance;
+  getIt.registerSingleton<DatabaseService>(DatabaseService(firebaseApp: firebaseApp));
+  
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? uuId = prefs.getString('uuid');
   if (uuId == null) {
     uuId = const Uuid().v4();
     await prefs.setString('uuid', uuId);
+    final DatabaseService dbService = getIt<DatabaseService>();
+    dbService.addOrUpdateUserInfo(displayName: '', photoUrl: '');
   }
   runApp(MyApp(uuId: uuId, firebaseApp: firebaseApp,));
 }
@@ -57,7 +64,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
-  late DatabaseService dbService;
 
   final TextEditingController _controller = TextEditingController();
 
@@ -68,19 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void initState() {
-    dbService = DatabaseService(firebaseApp: widget.firebaseApp);
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     
     return Scaffold(
       body: <Widget>[
-        ContactsPage(dbService: dbService,),
-        ChatsPage(dbService: dbService,),
-        SettingsPage(dbService: dbService,),
+        const ContactsPage(),
+        const ChatsPage(),
+        const SettingsPage(),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
