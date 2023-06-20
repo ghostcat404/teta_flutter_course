@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:chat_appl/pages/chats_page.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_links/uni_links.dart';
 import 'package:chat_appl/pages/contacts_page.dart';
 import 'package:chat_appl/pages/settings_page.dart';
 import 'package:chat_appl/services/database_service.dart';
@@ -64,6 +68,41 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
+
+  Object? _err;
+  Uri? _initialUri;
+  Uri? _latestUri;
+  StreamSubscription? _sub;
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _handleIncomingLinks();
+    // _handleInitialUri();
+  }
+
+  void _handleIncomingLinks() {
+    if (!kIsWeb) {
+      // It will handle app links while the app is already started - be it in
+      // the foreground or in the background.
+      _sub = uriLinkStream.listen((Uri? uri) {
+        if (!mounted) return;
+        print('got uri: $uri');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Got DeepLink'))
+        );
+      }, onError: (Object err) {
+        if (!mounted) return;
+        print('got err: $err');
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
