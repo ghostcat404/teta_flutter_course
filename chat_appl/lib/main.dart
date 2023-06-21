@@ -69,9 +69,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
 
-  Object? _err;
-  Uri? _initialUri;
-  Uri? _latestUri;
   StreamSubscription? _sub;
 
   @override
