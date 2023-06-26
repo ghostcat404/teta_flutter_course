@@ -2,9 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ProfileAvatar extends StatelessWidget {
-  final bool hasAvatar;
-  final String avatarUrl;
   const ProfileAvatar({super.key, required this.hasAvatar, required this.avatarUrl});
+
+  final String avatarUrl;
+  final bool hasAvatar;
 
   @override
   Widget build(BuildContext context) {

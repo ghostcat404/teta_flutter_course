@@ -4,24 +4,29 @@ import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter/webview_flutter.dart';// Import for Android features.
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+// Import for iOS features.
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class SettingsPage extends StatefulWidget {
-  final DatabaseService dbService;
-
-  const SettingsPage({super.key, required this.dbService});
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _isEdit = false;
-  bool _isAvatar = false;
+  late DatabaseService dbService;
+
   String _avatarURL = '';
-  String _displayName = '';
   final TextEditingController _controller = TextEditingController();
+  String _displayName = '';
+  bool _isAvatar = false;
+  bool _isEdit = false;
 
   @override
   void dispose() {
@@ -31,6 +36,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void initState() {
+    final GetIt getIt = GetIt.instance;
+    dbService = getIt<DatabaseService>();
     super.initState();
     _loadAvatar();
     _loadName();
@@ -55,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
     late String displayName;
     if (prefsDisplayName == null) {
       displayName = prefs.getString('uuid')!.substring(0, 8);
-      widget.dbService.updateUserInfo(displayName: displayName);
+      dbService.addOrUpdateUserInfo(displayName: displayName);
     } else {
       displayName = prefsDisplayName;
     }
@@ -85,7 +92,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (_controller.text != '') {
       prefs.setString('displayName', _controller.text);
       displayName = _controller.text;
-      widget.dbService.updateUserInfo(displayName: displayName);
+      dbService.addOrUpdateUserInfo(displayName: displayName);
     } else {
       displayName = prefs.getString('displayName')!;
     }
@@ -104,7 +111,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('photoUrl', downloadURL);
-    widget.dbService.updateUserInfo(photoUrl: downloadURL);
+    dbService.addOrUpdateUserInfo(photoUrl: downloadURL);
     _loadAvatar();
   }
 
@@ -134,6 +141,15 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(
               height: 16.0,
             ),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const WebViewContainer())
+              ),
+              child: const Text('Web view example')
+            ),
+            const SizedBox(
+              height: 16.0,
+            ),
             _isEdit
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 64.0),
@@ -147,6 +163,33 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+class WebViewContainer extends StatefulWidget {
+  const WebViewContainer({super.key});
+
+  @override
+  State<WebViewContainer> createState() => _WebViewContainerState();
+}
+
+class _WebViewContainerState extends State<WebViewContainer> {
+  final controller = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setBackgroundColor(const Color(0x00000000))
+    ..loadRequest(Uri.parse('https://flutter.dev'));
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Column(
+        children: [
+          Expanded(child: WebViewWidget(controller: controller))
+        ],
       ),
     );
   }

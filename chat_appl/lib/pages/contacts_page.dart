@@ -2,17 +2,25 @@ import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 class ContactsPage extends StatefulWidget {
-  final DatabaseService dbService;
-
-  const ContactsPage({super.key, required this.dbService});
+  const ContactsPage({super.key});
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
 }
 
 class _ContactsPageState extends State<ContactsPage> {
+  late DatabaseService dbService;
+
+  @override
+  void initState() {
+    final GetIt getIt = GetIt.instance;
+    dbService = getIt<DatabaseService>();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +56,7 @@ class _ContactsPageState extends State<ContactsPage> {
             return const Text('No Contacts');
           }
         },
-        stream: widget.dbService.contactsStream,
+        stream: dbService.contactsStream,
       )
     );
   }
