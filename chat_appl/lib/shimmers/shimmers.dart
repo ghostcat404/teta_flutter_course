@@ -62,13 +62,28 @@ class ListMessagesShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: 3,
-      reverse: true,
-      separatorBuilder: (BuildContext context, int index) => const Divider(),
-      itemBuilder: (context, index) {
-        return MessageWidgetShimmer();
-      }
+    return Scaffold(
+      appBar: AppBar(title: const Text('Chat with user'),),
+      body: ListView.separated(
+        itemCount: 3,
+        reverse: true,
+        separatorBuilder: (BuildContext context, int index) => const Divider(),
+        itemBuilder: (context, index) {
+          return MessageWidgetShimmer();
+        }
+      ),
+      bottomNavigationBar:
+        const BottomAppBar(
+          child: TextField(
+            style: TextStyle(fontSize: 16.0),
+            decoration: InputDecoration(
+              floatingLabelBehavior: FloatingLabelBehavior.never,
+              labelText: 'Message',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
+            )
+          )
+        ),
     );
   }
 }

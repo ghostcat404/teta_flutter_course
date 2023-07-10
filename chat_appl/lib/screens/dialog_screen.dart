@@ -30,7 +30,9 @@ class _MessagesViewState extends State<MessagesView> {
         reverse: true,
         itemCount: widget.messageList.length,
         itemBuilder: (BuildContext context, int index) {
-          return MessageWidget(message: widget.messageList[index],);
+          return MessageWidget(
+              message: widget.messageList[index],
+          );
         },
       ),
       bottomNavigationBar: TypingField(controller: _controller),

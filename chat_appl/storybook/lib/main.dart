@@ -63,8 +63,8 @@ class MyApp extends StatelessWidget {
             builder: (context) {
               return Scaffold(
                 appBar: AppBar(title: const Text('Messages'),),
-                body: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                body: const Padding(
+                  padding: EdgeInsets.all(16.0),
                   child: ListMessagesShimmer(),
                 ),
               );

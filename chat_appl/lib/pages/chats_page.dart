@@ -39,15 +39,17 @@ class _ChatsPageState extends State<ChatsPage> {
                 MaterialPageRoute(
                   builder: (context) => StreamBuilder(
                     builder: (context, snapshot) {
-                      if (
+                      bool dataIsLoaded = (
                         snapshot.hasData
                         && snapshot.data != null
                         && snapshot.data!.isNotEmpty
-                      ) {
-                        return MessagesView(messageList: snapshot.data!);
-                      } else {
-                        return const ListMessagesShimmer();
-                      }
+                      );
+                      return AnimatedSwitcher(
+                        duration: const Duration(seconds: 1),
+                        child: dataIsLoaded
+                          ? MessagesView(messageList: snapshot.data!)
+                          : const ListMessagesShimmer(),
+                      );
                     },
                     stream: dbService.messageStream,
                   ),
