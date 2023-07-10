@@ -15,6 +15,7 @@ class TypingField extends StatefulWidget {
 class _TypingFieldState extends State<TypingField> {
   late DatabaseService dbService;
   late SharedPreferences prefs;
+  bool isSending = false;
 
   @override
   initState() {
@@ -30,30 +31,33 @@ class _TypingFieldState extends State<TypingField> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: widget.controller,
-              style: const TextStyle(fontSize: 16.0),
-              decoration: const InputDecoration(
-                floatingLabelBehavior: FloatingLabelBehavior.never,
-                labelText: 'Message',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
-              )
+    return Padding(
+      padding: MediaQuery.of(context).viewInsets,
+      child: BottomAppBar(
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: widget.controller,
+                style: const TextStyle(fontSize: 16.0),
+                decoration: const InputDecoration(
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  labelText: 'Message',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
+                )
+              ),
             ),
-          ),
-          IconButton(
-            onPressed: () {
-              dbService.sendMessage(widget.controller.text, prefs.getString('uuid')!);
-              widget.controller.text = '';
-            },
-            icon: const Icon(Icons.send)
-          )
-        ],
-      )
+            IconButton(
+              onPressed: () {
+                dbService.sendMessage(widget.controller.text, prefs.getString('uuid')!);
+                widget.controller.text = '';
+              },
+              icon: const Icon(Icons.send)
+            )
+          ],
+        )
+      ),
     );
   }
 }
