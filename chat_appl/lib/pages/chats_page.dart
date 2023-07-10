@@ -1,5 +1,6 @@
 import 'package:chat_appl/screens/dialog_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/shimmers/shimmers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -45,12 +46,7 @@ class _ChatsPageState extends State<ChatsPage> {
                       ) {
                         return MessagesView(messageList: snapshot.data!);
                       } else {
-                        return Scaffold(
-                          appBar: AppBar(
-                            title: const Text('Chat with user'),
-                          ),
-                          body: const Center(child: Text('No messages'),),
-                        );
+                        return const ListMessagesShimmer();
                       }
                     },
                     stream: dbService.messageStream,
