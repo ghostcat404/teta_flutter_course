@@ -39,6 +39,7 @@ class _ChatsPageState extends State<ChatsPage> {
                 MaterialPageRoute(
                   builder: (context) => StreamBuilder(
                     builder: (context, snapshot) {
+                      // TODO: refactoring
                       bool dataIsLoaded = (
                         snapshot.hasData
                         && snapshot.data != null
