@@ -39,7 +39,6 @@ class _ChatsPageState extends State<ChatsPage> {
                 PageRouteBuilder(
                   pageBuilder: (context, _, __) => StreamBuilder(
                     builder: (context, snapshot) {
-                      // TODO: refactoring
                       bool dataIsLoaded = (
                         snapshot.hasData
                         && snapshot.data != null

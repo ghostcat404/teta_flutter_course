@@ -14,7 +14,6 @@ class TypingField extends StatefulWidget {
 
 class _TypingFieldState extends State<TypingField> with SingleTickerProviderStateMixin {
   late DatabaseService dbService;
-  late bool isSending;
   late SharedPreferences prefs;
 
   late final AnimationController _sendButtonAnimationController;
@@ -30,8 +29,6 @@ class _TypingFieldState extends State<TypingField> with SingleTickerProviderStat
     final GetIt getIt = GetIt.instance;
     dbService = getIt<DatabaseService>();
     _loadPrefs();
-
-    isSending = false;
 
     _sendButtonAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),

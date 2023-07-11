@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+final _mainRadius = BorderRadius.circular(8.0);
+final _mainColor = Colors.grey[300];
+
+
 class MessageWidgetShimmer extends StatelessWidget {
-  final _mainRadius = BorderRadius.circular(8.0);
-  final _mainColor = Colors.grey[300];
-  MessageWidgetShimmer({super.key});
+  const MessageWidgetShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -62,13 +64,48 @@ class ListMessagesShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: 3,
-      reverse: true,
-      separatorBuilder: (BuildContext context, int index) => const Divider(),
-      itemBuilder: (context, index) {
-        return MessageWidgetShimmer();
-      }
+    return Scaffold(
+      appBar: AppBar(
+        title: Container(
+          width: 400,
+          height: 30,
+          decoration: BoxDecoration(
+            color: _mainColor,
+            borderRadius: _mainRadius
+          ),
+        ),
+      ),
+      body: ListView.separated(
+        itemCount: 3,
+        reverse: true,
+        separatorBuilder: (BuildContext context, int index) => const Divider(),
+        itemBuilder: (context, index) {
+          return const MessageWidgetShimmer();
+        }
+      ),
+      bottomNavigationBar: Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: Row(
+          children: [
+            const Expanded(
+              child: TextField(
+                style: TextStyle(fontSize: 16.0),
+                decoration: InputDecoration(
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  labelText: 'Message',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
+                )
+              ),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.send),
+              color: Colors.blue[900],
+            )
+          ],
+        )
+      ),
     );
   }
 }

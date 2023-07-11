@@ -51,8 +51,8 @@ class MyApp extends StatelessWidget {
                 appBar: AppBar(
                   title: const Text('Chat with user'),
                 ),
-                body: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                body: const Padding(
+                  padding: EdgeInsets.all(8.0),
                   child: Center(child: MessageWidgetShimmer()),
                 ),
               );
@@ -61,13 +61,7 @@ class MyApp extends StatelessWidget {
           Story(
             name: 'Message List Shimmer',
             builder: (context) {
-              return Scaffold(
-                appBar: AppBar(title: const Text('Messages'),),
-                body: const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: ListMessagesShimmer(),
-                ),
-              );
+              return const ListMessagesShimmer();
             }
           )
         ],
