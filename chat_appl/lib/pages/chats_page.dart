@@ -36,8 +36,8 @@ class _ChatsPageState extends State<ChatsPage> {
             trailing: const Text('31.05.2023'),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => StreamBuilder(
+                PageRouteBuilder(
+                  pageBuilder: (context, _, __) => StreamBuilder(
                     builder: (context, snapshot) {
                       // TODO: refactoring
                       bool dataIsLoaded = (
@@ -54,6 +54,18 @@ class _ChatsPageState extends State<ChatsPage> {
                     },
                     stream: dbService.messageStream,
                   ),
+                  transitionsBuilder: (context, animation, _, child) {
+                    const begin = Offset(0.0, 1.0);
+                    const end = Offset.zero;
+                    const curve = Curves.ease;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
                 ),
               );
             },
