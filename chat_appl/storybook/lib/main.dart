@@ -1,5 +1,6 @@
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/pages/avatar_circle.dart';
+import 'package:chat_appl/shimmers/shimmers.dart';
 import 'package:flutter/material.dart';
 import 'package:storybook_flutter/storybook_flutter.dart';
 import 'package:chat_appl/screens/dialog_screen.dart';
@@ -43,6 +44,26 @@ class MyApp extends StatelessWidget {
               return Center(child: ProfileAvatar(hasAvatar: hasAvatar, avatarUrl: photoUrl));
             }
           ),
+          Story(
+            name: 'Message shimmer',
+            builder: (context) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('Chat with user'),
+                ),
+                body: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Center(child: MessageWidgetShimmer()),
+                ),
+              );
+            }
+          ),
+          Story(
+            name: 'Message List Shimmer',
+            builder: (context) {
+              return const ListMessagesShimmer();
+            }
+          )
         ],
       );
 }

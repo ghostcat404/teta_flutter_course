@@ -1,5 +1,6 @@
 import 'package:chat_appl/screens/dialog_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/shimmers/shimmers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -35,26 +36,35 @@ class _ChatsPageState extends State<ChatsPage> {
             trailing: const Text('31.05.2023'),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => StreamBuilder(
+                PageRouteBuilder(
+                  pageBuilder: (context, _, __) => StreamBuilder(
                     builder: (context, snapshot) {
-                      if (
+                      bool dataIsLoaded = (
                         snapshot.hasData
                         && snapshot.data != null
                         && snapshot.data!.isNotEmpty
-                      ) {
-                        return MessagesView(messageList: snapshot.data!);
-                      } else {
-                        return Scaffold(
-                          appBar: AppBar(
-                            title: const Text('Chat with user'),
-                          ),
-                          body: const Center(child: Text('No messages'),),
-                        );
-                      }
+                      );
+                      return AnimatedSwitcher(
+                        duration: const Duration(seconds: 1),
+                        child: dataIsLoaded
+                          ? MessagesView(messageList: snapshot.data!)
+                          : const ListMessagesShimmer(),
+                      );
                     },
                     stream: dbService.messageStream,
                   ),
+                  transitionsBuilder: (context, animation, _, child) {
+                    const begin = Offset(0.0, 1.0);
+                    const end = Offset.zero;
+                    const curve = Curves.ease;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
                 ),
               );
             },
