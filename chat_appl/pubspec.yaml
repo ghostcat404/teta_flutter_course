@@ -50,6 +50,8 @@ dependencies:
   get_it: ^7.6.0
   webview_flutter: ^4.2.2
   uni_links: ^0.5.1
+  firebase_ui_auth: ^1.6.0
+  firebase_auth: ^4.7.0
 
 dev_dependencies:
   flutter_test:

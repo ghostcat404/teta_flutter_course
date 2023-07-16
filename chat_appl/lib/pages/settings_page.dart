@@ -2,15 +2,14 @@ import 'dart:io';
 
 import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';// Import for Android features.
-import 'package:webview_flutter_android/webview_flutter_android.dart';
 // Import for iOS features.
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -86,6 +85,11 @@ class _SettingsPageState extends State<SettingsPage> {
     _controller.text = '';
   }
 
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushNamed(context, '/sign-in');
+  }
+
   Future<String> _updateProfileName() async {
     late String displayName;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -146,6 +150,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 MaterialPageRoute(builder: (context) => const WebViewContainer())
               ),
               child: const Text('Web view example')
+            ),
+            TextButton(
+              onPressed: _signOut,
+              child: const Text('Sign Out')
             ),
             const SizedBox(
               height: 16.0,
