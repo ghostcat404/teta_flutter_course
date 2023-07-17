@@ -1,11 +1,10 @@
 import 'package:chat_appl/pages/home_page.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide PhoneAuthProvider;
@@ -22,24 +21,22 @@ void main() async {
   ]);
 
   final GetIt getIt = GetIt.instance;
-  getIt.registerSingleton<DatabaseService>(DatabaseService(firebaseApp: firebaseApp));
-  
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? uuId = prefs.getString('uuid');
-  if (uuId == null) {
-    uuId = const Uuid().v4();
-    await prefs.setString('uuid', uuId);
-    final DatabaseService dbService = getIt<DatabaseService>();
-    dbService.addOrUpdateUserInfo(displayName: uuId, photoUrl: '');
-  }
-  runApp(MyApp(uuId: uuId, firebaseApp: firebaseApp,));
+  final FirebaseDatabase dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
+  getIt.registerSingleton<DatabaseService>(DatabaseService(dbInstance: dbInstance));
+  // TODO: refactoring
+  // final SharedPreferences prefs = await SharedPreferences.getInstance();
+  // String? uuId = prefs.getString('uuid');
+  // if (uuId == null) {
+  //   uuId = const Uuid().v4();
+  //   await prefs.setString('uuid', uuId);
+  //   final DatabaseService dbService = getIt<DatabaseService>();
+  //   dbService.addOrUpdateUserInfo();
+  // }
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.uuId, required this.firebaseApp});
-
-  final FirebaseApp firebaseApp;
-  final String uuId;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
