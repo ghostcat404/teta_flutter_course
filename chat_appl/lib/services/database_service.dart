@@ -19,7 +19,7 @@ class DatabaseService {
     });
   }
 
-  Future<String> getUserName (String userId) async {
+  Future<String> getUserName(String userId) async {
     final DataSnapshot dataSnapshot = await dbInstance
       .ref()
       .child('users')
@@ -31,7 +31,7 @@ class DatabaseService {
     return dataSnapshot.value. toString();
   }
 
-  Future<User> getUser (String userId) async {
+  Future<User> getUser(String userId) async {
     final userSnapshot = await dbInstance
       .ref()
       .child('users/$userId')
@@ -40,16 +40,16 @@ class DatabaseService {
     final user = User(
       id: userId,
       displayName: currentUser[ 'displayName'],
-      photoUrl: currentUser ['photoUrl']
+      photoUrl: currentUser['photoUrl']
     );
     return user;
   }
 
-  Future updateUserDisplayName (String displayName) async {
+  Future updateUserDisplayName(String displayName) async {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser != null) {
       final userId = firebaseUser.uid;
-      final photoURL = firebaseUser .photoURL ?? '';
+      final photoURL = firebaseUser.photoURL ?? '';
       final user = User(
         id: userId,
         displayName: displayName,

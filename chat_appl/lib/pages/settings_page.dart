@@ -44,34 +44,19 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _loadAvatar() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? avatarUrl = prefs.getString('photoUrl');
-    if (avatarUrl != null && avatarUrl != '') {
+    final User currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final String avatarUrl = currUser.displayName;
+    if (avatarUrl != '') {
       setState(() {
         _isAvatar = true;
         _avatarURL = avatarUrl;
       });
-    } else {
-      await prefs.setString('photoUrl', '');
     }
   }
 
   _loadName() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? prefsDisplayName = prefs.getString('displayName');
-    late String displayName;
-    if (prefsDisplayName == null) {
-      displayName = prefs.getString('uuid')!.substring(0, 8);
-      dbService.addOrUpdateUserInfo(
-        User(
-          id: prefs.getString('uuid')!,
-          displayName: displayName,
-          photoUrl: prefs.getString('photoUrl')!
-        )
-      );
-    } else {
-      displayName = prefsDisplayName;
-    }
+    final User currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final String displayName = currUser.displayName;
     setState(() {
       _displayName = displayName;
     });
@@ -99,19 +84,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<String> _updateProfileName() async {
     late String displayName;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (_controller.text != '') {
-      prefs.setString('displayName', _controller.text);
       displayName = _controller.text;
-      dbService.addOrUpdateUserInfo(
-        User(
-          id: prefs.getString('uuid')!,
-          displayName: displayName,
-          photoUrl: prefs.getString('photoUrl')!
-        )
-      );
+      dbService.updateUserDisplayName(displayName);
     } else {
-      displayName = prefs.getString('displayName')!;
+      displayName = FirebaseAuth.instance.currentUser!.uid;
     }
     return displayName;
   }
