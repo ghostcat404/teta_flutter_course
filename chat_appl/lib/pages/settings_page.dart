@@ -1,8 +1,9 @@
 import 'dart:io';
 
+import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -61,7 +62,13 @@ class _SettingsPageState extends State<SettingsPage> {
     late String displayName;
     if (prefsDisplayName == null) {
       displayName = prefs.getString('uuid')!.substring(0, 8);
-      dbService.addOrUpdateUserInfo(displayName: displayName);
+      dbService.addOrUpdateUserInfo(
+        User(
+          id: prefs.getString('uuid')!,
+          displayName: displayName,
+          photoUrl: prefs.getString('photoUrl')!
+        )
+      );
     } else {
       displayName = prefsDisplayName;
     }
@@ -96,7 +103,13 @@ class _SettingsPageState extends State<SettingsPage> {
     if (_controller.text != '') {
       prefs.setString('displayName', _controller.text);
       displayName = _controller.text;
-      dbService.addOrUpdateUserInfo(displayName: displayName);
+      dbService.addOrUpdateUserInfo(
+        User(
+          id: prefs.getString('uuid')!,
+          displayName: displayName,
+          photoUrl: prefs.getString('photoUrl')!
+        )
+      );
     } else {
       displayName = prefs.getString('displayName')!;
     }
@@ -115,7 +128,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('photoUrl', downloadURL);
-    dbService.addOrUpdateUserInfo(photoUrl: downloadURL);
+    dbService.addOrUpdateUserInfo(
+      User(
+        id: prefs.getString('uuid')!,
+        displayName: prefs.getString('displayName')!,
+        photoUrl: prefs.getString('photoUrl')!
+      )
+    );
     _loadAvatar();
   }
 

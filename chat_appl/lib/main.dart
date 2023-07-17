@@ -23,15 +23,6 @@ void main() async {
   final GetIt getIt = GetIt.instance;
   final FirebaseDatabase dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
   getIt.registerSingleton<DatabaseService>(DatabaseService(dbInstance: dbInstance));
-  // TODO: refactoring
-  // final SharedPreferences prefs = await SharedPreferences.getInstance();
-  // String? uuId = prefs.getString('uuid');
-  // if (uuId == null) {
-  //   uuId = const Uuid().v4();
-  //   await prefs.setString('uuid', uuId);
-  //   final DatabaseService dbService = getIt<DatabaseService>();
-  //   dbService.addOrUpdateUserInfo();
-  // }
   runApp(const MyApp());
 }
 

@@ -1,8 +1,13 @@
 import 'dart:async';
 
+import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/services/database_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:chat_appl/pages/chats_page.dart';
 import 'package:chat_appl/pages/contacts_page.dart';
@@ -27,10 +32,27 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  void _initUser() async {
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uuId = prefs.getString('uuid');
+    if (uuId == null) {
+      await prefs.setString('uuid', FirebaseAuth.instance.currentUser!.uid);
+      final DatabaseService dbService = GetIt.instance<DatabaseService>();
+      dbService.addOrUpdateUserInfo(
+        User(
+          id: FirebaseAuth.instance.currentUser!.uid,
+          displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
+          photoUrl: ''
+        ));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _handleIncomingLinks();
+    _initUser();
   }
 
   void _handleIncomingLinks() {
