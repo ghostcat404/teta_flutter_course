@@ -39,8 +39,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.latoTextTheme(),
       ),
-      home: const HomePage(),
-      initialRoute: FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/home',
+      initialRoute: FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/profile',
       routes: {
         '/sign-in': (context) {
           return SignInScreen(
@@ -69,6 +68,7 @@ class MyApp extends StatelessWidget {
           ]
         ),
       },
+      // home: const HomePage(),
     );
   }
 }

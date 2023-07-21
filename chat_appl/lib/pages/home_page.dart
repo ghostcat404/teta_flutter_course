@@ -5,7 +5,6 @@ import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:get_it/get_it.dart';
 
@@ -33,12 +32,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _initUser() async {
-
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? uuId = prefs.getString('uuid');
-    if (uuId == null) {
-      await prefs.setString('uuid', FirebaseAuth.instance.currentUser!.uid);
-      final DatabaseService dbService = GetIt.instance<DatabaseService>();
+    final currUser = FirebaseAuth.instance.currentUser;
+    final DatabaseService dbService = GetIt.instance<DatabaseService>();
+    final User? user = await dbService.getUser(currUser!.uid);
+    if (user == null) {
       dbService.addOrUpdateUserInfo(
         User(
           id: FirebaseAuth.instance.currentUser!.uid,

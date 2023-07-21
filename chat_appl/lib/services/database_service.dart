@@ -12,8 +12,7 @@ class DatabaseService {
   Future addOrUpdateUserInfo(User user) async {
     DatabaseReference ref = dbInstance.ref("users/${user.id}");
     await ref.set({
-      'displayName': '',
-      'photoUrl': '',
+      'id': user.id,
       'displayName': user.displayName,
       'photoUrl': user.photoUrl,
     });
@@ -26,23 +25,24 @@ class DatabaseService {
       .child(userId)
       .child('displayName')
       .get();
-    // final dataSnapshot = await userNameReference.get () ;
-    print (dataSnapshot. value);
     return dataSnapshot.value. toString();
   }
 
-  Future<User> getUser(String userId) async {
+  Future<User?> getUser(String userId) async {
     final userSnapshot = await dbInstance
       .ref()
       .child('users/$userId')
       .get();
-    final currentUser = Map<String, dynamic>.from(userSnapshot.value as Map) ;
-    final user = User(
-      id: userId,
-      displayName: currentUser[ 'displayName'],
-      photoUrl: currentUser['photoUrl']
-    );
-    return user;
+    if (userSnapshot.value != null) {
+      final currentUser = Map<String, dynamic>.from(userSnapshot.value as Map) ;
+      final user = User(
+        id: userId,
+        displayName: currentUser['displayName'],
+        photoUrl: currentUser['photoUrl']
+      );
+      return user;
+    }
+    return null;
   }
 
   Future updateUserDisplayName(String displayName) async {

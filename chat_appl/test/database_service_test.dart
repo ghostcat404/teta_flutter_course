@@ -33,7 +33,7 @@ void main() {
   });
 
   test('Get user from fake database', () async {
-    final User userFromFakeDatabase = await databaseService.getUser(userId);
+    final User? userFromFakeDatabase = await databaseService.getUser(userId);
     expect(
       userFromFakeDatabase,
       const User(id: userId, displayName: userName, photoUrl: photoUrl)

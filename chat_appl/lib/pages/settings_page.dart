@@ -44,8 +44,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _loadAvatar() async {
-    final User currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
-    final String avatarUrl = currUser.displayName;
+    final User? currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final String avatarUrl = currUser!.photoUrl;
     if (avatarUrl != '') {
       setState(() {
         _isAvatar = true;
@@ -55,8 +55,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _loadName() async {
-    final User currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
-    final String displayName = currUser.displayName;
+    final User? currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final String displayName = currUser!.displayName;
     setState(() {
       _displayName = displayName;
     });
