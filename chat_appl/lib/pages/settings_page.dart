@@ -1,16 +1,18 @@
 import 'dart:io';
 
+import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';// Import for Android features.
-import 'package:webview_flutter_android/webview_flutter_android.dart';
 // Import for iOS features.
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -44,28 +46,19 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _loadAvatar() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? avatarUrl = prefs.getString('photoUrl');
-    if (avatarUrl != null && avatarUrl != '') {
+    final User? currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final String avatarUrl = currUser!.photoUrl;
+    if (avatarUrl != '') {
       setState(() {
         _isAvatar = true;
         _avatarURL = avatarUrl;
       });
-    } else {
-      await prefs.setString('photoUrl', '');
     }
   }
 
   _loadName() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? prefsDisplayName = prefs.getString('displayName');
-    late String displayName;
-    if (prefsDisplayName == null) {
-      displayName = prefs.getString('uuid')!.substring(0, 8);
-      dbService.addOrUpdateUserInfo(displayName: displayName);
-    } else {
-      displayName = prefsDisplayName;
-    }
+    final User? currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final String displayName = currUser!.displayName;
     setState(() {
       _displayName = displayName;
     });
@@ -86,15 +79,18 @@ class _SettingsPageState extends State<SettingsPage> {
     _controller.text = '';
   }
 
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushNamed(context, '/sign-in');
+  }
+
   Future<String> _updateProfileName() async {
     late String displayName;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (_controller.text != '') {
-      prefs.setString('displayName', _controller.text);
       displayName = _controller.text;
-      dbService.addOrUpdateUserInfo(displayName: displayName);
+      dbService.updateUserDisplayName(displayName);
     } else {
-      displayName = prefs.getString('displayName')!;
+      displayName = FirebaseAuth.instance.currentUser!.uid;
     }
     return displayName;
   }
@@ -111,7 +107,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('photoUrl', downloadURL);
-    dbService.addOrUpdateUserInfo(photoUrl: downloadURL);
+    dbService.addOrUpdateUserInfo(
+      User(
+        id: prefs.getString('uuid')!,
+        displayName: prefs.getString('displayName')!,
+        photoUrl: prefs.getString('photoUrl')!
+      )
+    );
     _loadAvatar();
   }
 
@@ -121,9 +123,36 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text('Settings'),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, _, __) => Scaffold(
+                    appBar: AppBar(title: const Text('Share profile'),),
+                    body: Column(
+                      children: [
+                        Center(
+                          child: QrImageView(
+                            data: FirebaseAuth.instance.currentUser!.uid,
+                            version: QrVersions.auto,
+                            size: 300.0,
+                          ),
+                        ),
+                        const SizedBox(height: 16.0,),
+                        TextButton(onPressed: () async {
+                          await Clipboard.setData(ClipboardData(text: FirebaseAuth.instance.currentUser!.uid));
+                        }, child: const Text('Copy to clipborad'))
+                      ],
+                    ),
+                  ),
+                )
+              );
+            },
+            icon: const Icon(Icons.qr_code)
+          ),
           _isEdit 
             ? TextButton(onPressed: _done, child: const Text('Done'))
-            : TextButton(onPressed: _edit, child: const Text('Edit'))
+            : TextButton(onPressed: _edit, child: const Text('Edit')),
         ],
       ),
       body: SizedBox(
@@ -146,6 +175,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 MaterialPageRoute(builder: (context) => const WebViewContainer())
               ),
               child: const Text('Web view example')
+            ),
+            TextButton(
+              onPressed: _signOut,
+              child: const Text('Sign Out')
             ),
             const SizedBox(
               height: 16.0,

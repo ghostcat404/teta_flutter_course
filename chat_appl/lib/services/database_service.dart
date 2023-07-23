@@ -1,26 +1,62 @@
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_database/firebase_database.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseService {
-  DatabaseService({required this.firebaseApp}) {
-    dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
+  final FirebaseDatabase dbInstance;
+
+  DatabaseService({required this.dbInstance});
+
+
+  Future addOrUpdateUserInfo(User user) async {
+    DatabaseReference ref = dbInstance.ref("users/${user.id}");
+    await ref.set({
+      'id': user.id,
+      'displayName': user.displayName,
+      'photoUrl': user.photoUrl,
+    });
   }
 
-  late FirebaseDatabase dbInstance;
-  final FirebaseApp firebaseApp;
+  Future<String> getUserName(String userId) async {
+    final DataSnapshot dataSnapshot = await dbInstance
+      .ref()
+      .child('users')
+      .child(userId)
+      .child('displayName')
+      .get();
+    return dataSnapshot.value. toString();
+  }
 
-  Future addOrUpdateUserInfo({String? displayName, String? photoUrl}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final DatabaseReference dbRef = dbInstance.ref().child('users/${prefs.getString("uuid")}');
-    final user = User(
-      id: prefs.getString('uuid')!, 
-      displayName: displayName ?? prefs.getString('displayName')!,
-      photoUrl: photoUrl ?? prefs.getString('photoUrl')!
-    );
-    await dbRef.set(user.toJson());
+  Future<User?> getUser(String userId) async {
+    final userSnapshot = await dbInstance
+      .ref()
+      .child('users/$userId')
+      .get();
+    if (userSnapshot.value != null) {
+      final currentUser = Map<String, dynamic>.from(userSnapshot.value as Map) ;
+      final user = User(
+        id: userId,
+        displayName: currentUser['displayName'],
+        photoUrl: currentUser['photoUrl']
+      );
+      return user;
+    }
+    return null;
+  }
+
+  Future updateUserDisplayName(String displayName) async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      final userId = firebaseUser.uid;
+      final photoURL = firebaseUser.photoURL ?? '';
+      final user = User(
+        id: userId,
+        displayName: displayName,
+        photoUrl: photoURL
+      );
+      await addOrUpdateUserInfo(user);
+    }
   }
 
   Future sendMessage(String text, String uuid) async {
