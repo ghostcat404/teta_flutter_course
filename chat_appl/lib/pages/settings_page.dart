@@ -6,8 +6,10 @@ import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';// Import for Android features.
 // Import for iOS features.
@@ -121,9 +123,36 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text('Settings'),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, _, __) => Scaffold(
+                    appBar: AppBar(title: const Text('Share profile'),),
+                    body: Column(
+                      children: [
+                        Center(
+                          child: QrImageView(
+                            data: FirebaseAuth.instance.currentUser!.uid,
+                            version: QrVersions.auto,
+                            size: 300.0,
+                          ),
+                        ),
+                        const SizedBox(height: 16.0,),
+                        TextButton(onPressed: () async {
+                          await Clipboard.setData(ClipboardData(text: FirebaseAuth.instance.currentUser!.uid));
+                        }, child: const Text('Copy to clipborad'))
+                      ],
+                    ),
+                  ),
+                )
+              );
+            },
+            icon: const Icon(Icons.qr_code)
+          ),
           _isEdit 
             ? TextButton(onPressed: _done, child: const Text('Done'))
-            : TextButton(onPressed: _edit, child: const Text('Edit'))
+            : TextButton(onPressed: _edit, child: const Text('Edit')),
         ],
       ),
       body: SizedBox(
