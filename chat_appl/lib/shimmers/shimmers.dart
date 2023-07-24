@@ -65,6 +65,7 @@ class ListMessagesShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const ValueKey('ListMessagesShimmer'),
       appBar: AppBar(
         title: Container(
           width: 400,

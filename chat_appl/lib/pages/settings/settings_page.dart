@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/avatar_circle.dart';
+import 'package:chat_appl/pages/settings/geo_location.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
@@ -149,6 +150,12 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
             icon: const Icon(Icons.qr_code)
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              PageRouteBuilder(pageBuilder: (context, _, __) => const GeolocatorWidget())
+            ),
+            icon: const Icon(Icons.location_on_outlined)
           ),
           _isEdit 
             ? TextButton(onPressed: _done, child: const Text('Done'))

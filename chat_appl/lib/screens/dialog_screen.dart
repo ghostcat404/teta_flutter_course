@@ -23,6 +23,7 @@ class _MessagesViewState extends State<MessagesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const ValueKey('MessagesView'),
       appBar: AppBar(
         title: const Text('Chat with user'),
       ),
