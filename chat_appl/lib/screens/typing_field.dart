@@ -69,6 +69,7 @@ class _TypingFieldState extends State<TypingField> with SingleTickerProviderStat
               child: IconButton(
                 onPressed: () {
                   _sendButtonAnimationController.forward(from: 0);
+                  // TODO: fix!
                   dbService.sendMessage(widget.controller.text, prefs.getString('uuid')!);
                   widget.controller.text = '';
                 },

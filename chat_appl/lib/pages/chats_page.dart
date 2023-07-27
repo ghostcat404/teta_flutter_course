@@ -37,6 +37,9 @@ class _ChatsPageState extends State<ChatsPage> {
             onTap: () {
               Navigator.of(context).push(
                 PageRouteBuilder(
+                  settings: const RouteSettings(
+                    name: '/test-chat'
+                  ),
                   pageBuilder: (context, _, __) => StreamBuilder(
                     builder: (context, snapshot) {
                       bool dataIsLoaded = (

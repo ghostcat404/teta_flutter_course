@@ -1,6 +1,7 @@
 import 'package:chat_appl/pages/home_page.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
@@ -16,13 +17,31 @@ void main() async {
     name: "chat_appl",
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  NotificationSettings notificationSettings = await firebaseMessaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true
+  );
+  if (notificationSettings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('User granted permission');
+    // TODO: handle the received notifications
+  } else {
+    print('User declined or has not accepted permission');
+  }
+  final fcmToken = await firebaseMessaging.getToken();
+  // print(fcmToken);
+
   FirebaseUIAuth.configureProviders([
     PhoneAuthProvider(),
   ]);
 
   final GetIt getIt = GetIt.instance;
   final FirebaseDatabase dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
+  dbInstance.setPersistenceEnabled(true);
   getIt.registerSingleton<DatabaseService>(DatabaseService(dbInstance: dbInstance));
+  getIt.registerSingleton<FirebaseMessaging>(firebaseMessaging);
+  getIt.registerSingleton<NotificationSettings>(notificationSettings);
   runApp(const MyApp());
 }
 
@@ -39,7 +58,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.latoTextTheme(),
       ),
-      initialRoute: FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/profile',
+      initialRoute: FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/home-page',
       routes: {
         '/sign-in': (context) {
           return SignInScreen(
@@ -51,7 +70,7 @@ class MyApp extends StatelessWidget {
             ],
           );
         },
-        '/profile': (context) {
+        '/home-page': (context) {
           return const HomePage();
         },
         '/phone': (context) => PhoneInputScreen(
@@ -68,7 +87,6 @@ class MyApp extends StatelessWidget {
           ]
         ),
       },
-      // home: const HomePage(),
     );
   }
 }
