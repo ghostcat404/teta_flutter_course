@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   desktop_webview_auth
   firebase_core
   geolocator_windows
+  isar_flutter_libs
   url_launcher_windows
 )
 

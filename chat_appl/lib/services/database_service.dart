@@ -1,13 +1,19 @@
+import 'package:chat_appl/models/db_user.dart';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_database/firebase_database.dart';
+import 'package:get_it/get_it.dart';
+import 'package:isar/isar.dart';
 
 class DatabaseService {
   final FirebaseDatabase dbInstance;
 
   DatabaseService({required this.dbInstance});
 
+  Future<List<User>> getUsers() async {
+    return [];
+  }
 
   Future addOrUpdateUserInfo(User user) async {
     DatabaseReference ref = dbInstance.ref("users/${user.id}");
@@ -70,9 +76,9 @@ class DatabaseService {
     await messageRef.set(message.toJson());
   }
 
-  Stream<List<dynamic>> get messageStream => _getStreamByRef<Message>('messages');
+  Stream<List<Message?>> get messageStream => _getStreamByRef<Message>('messages');
 
-  Stream<List<dynamic>> get contactsStream => _getStreamByRef<User>('users');
+  Stream<List<User?>> get contactsStream => _getStreamByRef<User>('users');
 
   Stream<List<T?>> _getStreamByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
@@ -82,6 +88,7 @@ class DatabaseService {
         firebaseMessages.forEach((key, value) {
           final currentData = Map<String, dynamic>.from(value);
           final T? instance = createInstanceOf<T>(currentData);
+          if (instance != null) cacheInstanceOf<T>(instance);
           dataList.add(instance);
         });
       }
@@ -98,4 +105,22 @@ T? createInstanceOf<T>(Map<String, dynamic> json) {
 
   final instance = factories[T];
   return instance?.call(json);
+}
+
+void cacheInstanceOf<T>(T instance) {
+  final Isar isarDb = GetIt.instance<Isar>();
+
+  final factories = <Type, void Function(dynamic)>{
+    User: (dynamic localUser) async {
+      final isarUser = DbUser()
+        ..userId = localUser.id
+        ..displayName = localUser.displayName
+        ..photoUrl = localUser.photoURL;
+      await isarDb.writeTxn(() async => await isarDb.dbUsers.put(isarUser));
+    },
+    Message: (dynamic message) async {}
+  };
+
+  final action = factories[T];
+  action?.call(instance);
 }

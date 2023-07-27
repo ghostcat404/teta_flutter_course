@@ -38,9 +38,9 @@ class _ContactsPageState extends State<ContactsPage> {
               itemCount: snapshot.data!.length,
               separatorBuilder: (BuildContext context, int index) => const Divider(),
               itemBuilder: (BuildContext context, int index) {
-                final User user = snapshot.data![index];
+                final User? user = snapshot.data![index];
                 bool hasAvatar = false;
-                if (user.photoUrl != '') {
+                if (user!.photoUrl != '') {
                   hasAvatar = true;
                 }
                 return ListTile(

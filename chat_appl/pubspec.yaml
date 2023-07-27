@@ -58,14 +58,18 @@ dependencies:
   flutter_map: ^5.0.0
   url_launcher: ^6.1.12
   firebase_messaging: ^14.6.5
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.0.15
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  build_runner: ^2.3.3
+  build_runner: ^2.4.6
   freezed: ^2.3.4
   json_serializable: ^6.6.2
+  isar_generator: ^3.1.0+1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
