@@ -91,10 +91,25 @@ class DatabaseService {
           if (instance != null) cacheInstanceOf<T>(instance);
           dataList.add(instance);
         });
+        sortInstancesOf<T>(dataList);
       }
       return dataList;
     });
   }
+}
+
+void sortInstancesOf<T>(List<dynamic> dataList) {
+  final factories = <Type, void Function(List<dynamic>)>{
+    Message: (List<dynamic> dataList) {
+      dataList.sort((b, a) => a.timestamp.compareTo(b.timestamp));
+    },
+    User: (List<dynamic> dataList) {
+      dataList.sort((a, b) => a.displayName.compareTo(b.displayName));
+    }
+  };
+
+  final instance = factories[T];
+  instance!.call(dataList);
 }
 
 T? createInstanceOf<T>(Map<String, dynamic> json) {
