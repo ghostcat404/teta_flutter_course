@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/avatar_circle.dart';
+import 'package:chat_appl/components/avatar_circle.dart';
 import 'package:chat_appl/pages/settings/geo_location.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;

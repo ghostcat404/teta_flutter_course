@@ -1,6 +1,6 @@
-import 'package:chat_appl/screens/dialog_screen.dart';
+import 'package:chat_appl/pages/chats/dialog_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
-import 'package:chat_appl/shimmers/shimmers.dart';
+import 'package:chat_appl/shimmers/chats_shimmers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 

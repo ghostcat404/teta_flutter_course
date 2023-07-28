@@ -1,5 +1,5 @@
-import 'package:chat_appl/chat_components/message.dart';
-import 'package:chat_appl/screens/typing_field.dart';
+import 'package:chat_appl/pages/chats/components/message.dart';
+import 'package:chat_appl/pages/chats/components/typing_field.dart';
 import 'package:flutter/material.dart';
 
 class MessagesView extends StatefulWidget {

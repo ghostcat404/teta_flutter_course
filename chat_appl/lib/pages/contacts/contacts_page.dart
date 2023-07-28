@@ -1,5 +1,5 @@
 import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/avatar_circle.dart';
+import 'package:chat_appl/components/avatar_circle.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';

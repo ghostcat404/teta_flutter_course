@@ -9,8 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:chat_appl/pages/chats_page.dart';
-import 'package:chat_appl/pages/contacts_page.dart';
+import 'package:chat_appl/pages/chats/chats_page.dart';
+import 'package:chat_appl/pages/contacts/contacts_page.dart';
 import 'package:chat_appl/pages/settings/settings_page.dart';
 
 class HomePage extends StatefulWidget {
