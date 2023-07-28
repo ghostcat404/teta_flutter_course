@@ -13,7 +13,6 @@ import 'package:chat_appl/pages/chats_page.dart';
 import 'package:chat_appl/pages/contacts_page.dart';
 import 'package:chat_appl/pages/settings/settings_page.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -26,11 +25,12 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription? _sub;
   StreamSubscription? _onMessageStream;
   StreamSubscription? _onBackgroungMessageStream;
-  // StreamSubscription? _onMessageOpenedAppStream;
 
   void _handleMessage(RemoteMessage message) {
-    Navigator.pushNamed(context, '/Chats');
+    Navigator.of(context).push(
+        PageRouteBuilder(pageBuilder: (context, _, __) => const ChatsPage()));
   }
+
   Future<void> setupInteractedMessage() async {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
@@ -39,7 +39,8 @@ class _HomePageState extends State<HomePage> {
       _handleMessage(initialMessage);
     }
 
-    _onBackgroungMessageStream = FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+    _onBackgroungMessageStream =
+        FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
     _onMessageStream = FirebaseMessaging.onMessage.listen(_handleMessage);
   }
 
@@ -64,12 +65,10 @@ class _HomePageState extends State<HomePage> {
     final DatabaseService dbService = GetIt.instance<DatabaseService>();
     final User? user = await dbService.getUser(currUser!.uid);
     if (user == null) {
-      dbService.addOrUpdateUserInfo(
-        User(
+      dbService.addOrUpdateUserInfo(User(
           id: FirebaseAuth.instance.currentUser!.uid,
           displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
-          photoUrl: ''
-        ));
+          photoUrl: ''));
     }
   }
 
@@ -80,9 +79,8 @@ class _HomePageState extends State<HomePage> {
       _sub = uriLinkStream.listen((Uri? uri) {
         if (!mounted) return;
         // print('got uri: $uri');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Got DeepLink'))
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Got DeepLink')));
       }, onError: (Object err) {
         if (!mounted) return;
         // print('got err: $err');
