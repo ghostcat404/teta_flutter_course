@@ -115,7 +115,7 @@ void cacheInstanceOf<T>(T instance) {
       final isarUser = DbUser()
         ..userId = localUser.id
         ..displayName = localUser.displayName
-        ..photoUrl = localUser.photoURL;
+        ..photoUrl = localUser.photoUrl;
       await isarDb.writeTxn(() async => await isarDb.dbUsers.put(isarUser));
     },
     Message: (dynamic message) async {}

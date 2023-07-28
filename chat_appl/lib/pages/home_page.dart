@@ -26,38 +26,21 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription? _sub;
   StreamSubscription? _onMessageStream;
   StreamSubscription? _onBackgroungMessageStream;
-  StreamSubscription? _onMessageOpenedAppStream;
+  // StreamSubscription? _onMessageOpenedAppStream;
 
   void _handleMessage(RemoteMessage message) {
-    // if (message.data['type'] == 'chat') {
-    print('got $message');
-    Navigator.pushNamed(context, '/test-chat');
-    // }
+    Navigator.pushNamed(context, '/Chats');
   }
-  // It is assumed that all messages contain a data field with the key 'type'
   Future<void> setupInteractedMessage() async {
-    // Get any messages which caused the application to open from
-    // a terminated state.
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
-    // If the message also contains a data property with a "type" of "chat",
-    // navigate to a chat screen
     if (initialMessage != null) {
       _handleMessage(initialMessage);
     }
 
-    // Also handle any interaction when the app is in the background via a
-    // Stream listener
     _onBackgroungMessageStream = FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-    _onMessageStream = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
-      }
-    });
+    _onMessageStream = FirebaseMessaging.onMessage.listen(_handleMessage);
   }
 
   @override
@@ -71,8 +54,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _sub?.cancel();
-    // _onBackgroungMessageStream?.cancel();
-    // _onMessageStream?.cancel();
+    _onBackgroungMessageStream?.cancel();
+    _onMessageStream?.cancel();
     super.dispose();
   }
 
