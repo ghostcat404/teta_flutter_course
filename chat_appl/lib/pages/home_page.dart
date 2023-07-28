@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
       dbService.addOrUpdateUserInfo(User(
           id: FirebaseAuth.instance.currentUser!.uid,
           displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
-          photoUrl: ''));
+          photoUrl: '',));
     }
   }
 

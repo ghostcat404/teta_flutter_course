@@ -1,7 +1,7 @@
+import 'package:chat_appl/models/chat_info.dart';
 import 'package:chat_appl/models/db_user.dart';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
@@ -10,10 +10,6 @@ class DatabaseService {
   final FirebaseDatabase dbInstance;
 
   DatabaseService({required this.dbInstance});
-
-  Future<List<User>> getUsers() async {
-    return [];
-  }
 
   Future addOrUpdateUserInfo(User user) async {
     DatabaseReference ref = dbInstance.ref("users/${user.id}");
@@ -24,67 +20,75 @@ class DatabaseService {
     });
   }
 
+  Future addOrUpdateUserChatsInfo(String userId, ChatInfo chatInfo) async {
+    DatabaseReference ref =
+        dbInstance.ref('users/$userId/chatsInfo/${chatInfo.chatId}');
+    await ref.set(chatInfo.toJson());
+  }
+
+  Future<ChatInfo?> getUserChatsInfo(String userAId, String userBId) async {
+    DataSnapshot chatsInfoSnapshot =
+        await dbInstance.ref('users/$userAId/chatsInfo/$userBId').get();
+    if (chatsInfoSnapshot.value != null) {
+      final ChatInfo chatInfo = ChatInfo.fromJson(
+          Map<String, dynamic>.from(chatsInfoSnapshot.value as Map));
+      return chatInfo;
+    }
+    return null;
+  }
+
   Future<String> getUserName(String userId) async {
-    final DataSnapshot dataSnapshot = await dbInstance
-      .ref()
-      .child('users')
-      .child(userId)
-      .child('displayName')
-      .get();
-    return dataSnapshot.value. toString();
+    final DataSnapshot dataSnapshot = await dbInstance.ref('users/$userId/displayName').get();
+    return dataSnapshot.value.toString();
   }
 
   Future<User?> getUser(String userId) async {
-    final userSnapshot = await dbInstance
-      .ref()
-      .child('users/$userId')
-      .get();
+    final userSnapshot = await dbInstance.ref().child('users/$userId').get();
     if (userSnapshot.value != null) {
-      final currentUser = Map<String, dynamic>.from(userSnapshot.value as Map) ;
-      final user = User(
-        id: userId,
-        displayName: currentUser['displayName'],
-        photoUrl: currentUser['photoUrl']
-      );
+      final currentUser = Map<String, dynamic>.from(userSnapshot.value as Map);
+      final user = User.fromJson(currentUser);
       return user;
     }
     return null;
   }
 
-  Future updateUserDisplayName(String displayName) async {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null) {
-      final userId = firebaseUser.uid;
-      final photoURL = firebaseUser.photoURL ?? '';
-      final user = User(
-        id: userId,
-        displayName: displayName,
-        photoUrl: photoURL
-      );
-      await addOrUpdateUserInfo(user);
-    }
-  }
+  // Future updateUserDisplayName(String displayName) async {
+  //   final firebaseUser = FirebaseAuth.instance.currentUser;
+  //   if (firebaseUser != null) {
+  //     final userId = firebaseUser.uid;
+  //     final photoURL = firebaseUser.photoURL ?? '';
+  //     final user = User(
+  //       id: userId,
+  //       displayName: displayName,
+  //       photoUrl: photoURL,
+  //     );
+  //     await addOrUpdateUserInfo(user);
+  //   }
+  // }
 
   Future sendMessage(String text, String uuid) async {
-    final DatabaseReference dbRef = dbInstance.ref('messages'); 
+    final DatabaseReference dbRef = dbInstance.ref('messages');
     final message = Message(
-      userId: uuid,
-      text: text,
-      timestamp: DateTime.now().millisecondsSinceEpoch
-    );
+        userId: uuid,
+        text: text,
+        timestamp: DateTime.now().millisecondsSinceEpoch);
     final messageRef = dbRef.push();
     await messageRef.set(message.toJson());
   }
 
-  Stream<List<Message?>> get messageStream => _getStreamByRef<Message>('messages');
-
+  Stream<List<ChatInfo?>> getChatInfoStream(String userId) =>
+      _getStreamByRef('/users/$userId/chatsInfo');
+  // TODO: fix
+  Stream<List<Message?>> get messageStream =>
+      _getStreamByRef<Message>('messages');
   Stream<List<User?>> get contactsStream => _getStreamByRef<User>('users');
 
   Stream<List<T?>> _getStreamByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
       List<T?> dataList = [];
       if (event.snapshot.value != null) {
-        final firebaseMessages = Map<dynamic, dynamic>.from(event.snapshot.value as Map<dynamic, dynamic>);
+        final firebaseMessages = Map<dynamic, dynamic>.from(
+            event.snapshot.value as Map<dynamic, dynamic>);
         firebaseMessages.forEach((key, value) {
           final currentData = Map<String, dynamic>.from(value);
           final T? instance = createInstanceOf<T>(currentData);
@@ -105,7 +109,8 @@ void sortInstancesOf<T>(List<dynamic> dataList) {
     },
     User: (List<dynamic> dataList) {
       dataList.sort((a, b) => a.displayName.compareTo(b.displayName));
-    }
+    },
+    ChatInfo: (List<dynamic> dataList) => dataList,
   };
 
   final instance = factories[T];
@@ -114,8 +119,9 @@ void sortInstancesOf<T>(List<dynamic> dataList) {
 
 T? createInstanceOf<T>(Map<String, dynamic> json) {
   final factories = <Type, T Function(Map<String, dynamic>)>{
-    User: (Map<String, dynamic> json) => User.fromJson(json) as T, 
+    User: (Map<String, dynamic> json) => User.fromJson(json) as T,
     Message: (Map<String, dynamic> json) => Message.fromJson(json) as T,
+    ChatInfo: (Map<String, dynamic> json) => ChatInfo.fromJson(json) as T
   };
 
   final instance = factories[T];
@@ -133,7 +139,8 @@ void cacheInstanceOf<T>(T instance) {
         ..photoUrl = localUser.photoUrl;
       await isarDb.writeTxn(() async => await isarDb.dbUsers.put(isarUser));
     },
-    Message: (dynamic message) async {}
+    Message: (dynamic message) async {},
+    ChatInfo: (dynamic message) async {},
   };
 
   final action = factories[T];

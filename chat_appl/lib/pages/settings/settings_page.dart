@@ -11,8 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:webview_flutter/webview_flutter.dart';// Import for Android features.
+import 'package:webview_flutter/webview_flutter.dart'; // Import for Android features.
 // Import for iOS features.
 
 class SettingsPage extends StatefulWidget {
@@ -46,8 +45,10 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadName();
   }
 
+  // TODO: fix null while loading
   _loadAvatar() async {
-    final User? currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final User? currUser =
+        await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
     final String avatarUrl = currUser!.photoUrl;
     if (avatarUrl != '') {
       setState(() {
@@ -58,7 +59,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _loadName() async {
-    final User? currUser = await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    final User? currUser =
+        await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
     final String displayName = currUser!.displayName;
     setState(() {
       _displayName = displayName;
@@ -86,35 +88,41 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<String> _updateProfileName() async {
+    final User? currUser =
+        await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
     late String displayName;
     if (_controller.text != '') {
       displayName = _controller.text;
-      dbService.updateUserDisplayName(displayName);
+      // currUser!.displayName = displayName;
+      // dbService.updateUserDisplayName(displayName);
     } else {
       displayName = FirebaseAuth.instance.currentUser!.uid;
     }
+    dbService.addOrUpdateUserInfo(User(
+        id: currUser!.id,
+        displayName: displayName,
+        photoUrl: currUser.photoUrl,));
     return displayName;
   }
 
   void _updateProfileImage() async {
+    final User? currUser =
+        await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    
     final ImagePicker picker = ImagePicker();
     // Pick an image.
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     var imageFile = File(image!.path);
-    Reference ref = FirebaseStorage.instance.ref().child('images').child(image.name);
+    Reference ref =
+        FirebaseStorage.instance.ref().child('images').child(image.name);
     await ref.putFile(imageFile);
     final downloadURL = await ref.getDownloadURL();
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('photoUrl', downloadURL);
-    dbService.addOrUpdateUserInfo(
-      User(
-        id: prefs.getString('uuid')!,
-        displayName: prefs.getString('displayName')!,
-        photoUrl: prefs.getString('photoUrl')!
-      )
-    );
+    dbService.addOrUpdateUserInfo(User(
+        id: currUser!.id,
+        displayName: currUser.displayName,
+        photoUrl: downloadURL,));
     _loadAvatar();
   }
 
@@ -125,11 +133,12 @@ class _SettingsPageState extends State<SettingsPage> {
         title: const Text('Settings'),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                PageRouteBuilder(
+              onPressed: () {
+                Navigator.of(context).push(PageRouteBuilder(
                   pageBuilder: (context, _, __) => Scaffold(
-                    appBar: AppBar(title: const Text('Share profile'),),
+                    appBar: AppBar(
+                      title: const Text('Share profile'),
+                    ),
                     body: Column(
                       children: [
                         Center(
@@ -139,27 +148,29 @@ class _SettingsPageState extends State<SettingsPage> {
                             size: 300.0,
                           ),
                         ),
-                        const SizedBox(height: 16.0,),
-                        TextButton(onPressed: () async {
-                          await Clipboard.setData(ClipboardData(text: FirebaseAuth.instance.currentUser!.uid));
-                        }, child: const Text('Copy to clipborad'))
+                        const SizedBox(
+                          height: 16.0,
+                        ),
+                        TextButton(
+                            onPressed: () async {
+                              await Clipboard.setData(ClipboardData(
+                                  text:
+                                      FirebaseAuth.instance.currentUser!.uid));
+                            },
+                            child: const Text('Copy to clipborad'))
                       ],
                     ),
                   ),
-                )
-              );
-            },
-            icon: const Icon(Icons.qr_code)
-          ),
+                ));
+              },
+              icon: const Icon(Icons.qr_code)),
           IconButton(
-            onPressed: () => Navigator.of(context).push(
-              PageRouteBuilder(pageBuilder: (context, _, __) => const GeolocatorWidget())
-            ),
-            icon: const Icon(Icons.location_on_outlined)
-          ),
-          _isEdit 
-            ? TextButton(onPressed: _done, child: const Text('Done'))
-            : TextButton(onPressed: _edit, child: const Text('Edit')),
+              onPressed: () => Navigator.of(context).push(PageRouteBuilder(
+                  pageBuilder: (context, _, __) => const GeolocatorWidget())),
+              icon: const Icon(Icons.location_on_outlined)),
+          _isEdit
+              ? TextButton(onPressed: _done, child: const Text('Done'))
+              : TextButton(onPressed: _edit, child: const Text('Edit')),
         ],
       ),
       body: SizedBox(
@@ -171,43 +182,39 @@ class _SettingsPageState extends State<SettingsPage> {
               height: 64.0,
             ),
             GestureDetector(
-              onTap: _updateProfileImage,
-              child: ProfileAvatar(hasAvatar: _isAvatar, avatarUrl: _avatarURL,)
-            ),
+                onTap: _updateProfileImage,
+                child: ProfileAvatar(
+                  hasAvatar: _isAvatar,
+                  avatarUrl: _avatarURL,
+                )),
             const SizedBox(
               height: 16.0,
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const WebViewContainer())
-              ),
-              child: const Text('Web view example')
-            ),
-            TextButton(
-              onPressed: _signOut,
-              child: const Text('Sign Out')
-            ),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const WebViewContainer())),
+                child: const Text('Web view example')),
+            TextButton(onPressed: _signOut, child: const Text('Sign Out')),
             const SizedBox(
               height: 16.0,
             ),
             _isEdit
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 64.0),
-                  child: TextField(
-                    controller: _controller,
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 64.0),
+                    child: TextField(
+                      controller: _controller,
+                    ),
+                  )
+                : Text(
+                    _displayName,
+                    style: const TextStyle(fontSize: 24.0),
                   ),
-                )
-              : Text(
-                _displayName,
-                style: const TextStyle(fontSize: 24.0),
-              ),
           ],
         ),
       ),
     );
   }
 }
-
 
 class WebViewContainer extends StatefulWidget {
   const WebViewContainer({super.key});
@@ -227,9 +234,7 @@ class _WebViewContainerState extends State<WebViewContainer> {
     return Scaffold(
       appBar: AppBar(),
       body: Column(
-        children: [
-          Expanded(child: WebViewWidget(controller: controller))
-        ],
+        children: [Expanded(child: WebViewWidget(controller: controller))],
       ),
     );
   }
