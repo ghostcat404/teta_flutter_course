@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
                 min: 1285537005517,
                 max: 1785537005517,
               );
-              return MessagesView(messageList: [Message(userId: userId, text: text, timestamp: timestamp)]);
+              return MessagesView(messageList: [Message(userId: userId, text: text, timestamp: timestamp)], chatId: '',);
             }
           ),
           Story(

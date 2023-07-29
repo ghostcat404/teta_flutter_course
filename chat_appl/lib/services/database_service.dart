@@ -1,4 +1,5 @@
 import 'package:chat_appl/models/chat_info.dart';
+import 'package:chat_appl/models/chat_settings.dart';
 import 'package:chat_appl/models/db_user.dart';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
@@ -13,11 +14,7 @@ class DatabaseService {
 
   Future addOrUpdateUserInfo(User user) async {
     DatabaseReference ref = dbInstance.ref("users/${user.id}");
-    await ref.set({
-      'id': user.id,
-      'displayName': user.displayName,
-      'photoUrl': user.photoUrl,
-    });
+    await ref.set(user.toJson());
   }
 
   Future addOrUpdateUserChatsInfo(String userId, ChatInfo chatInfo) async {
@@ -26,9 +23,14 @@ class DatabaseService {
     await ref.set(chatInfo.toJson());
   }
 
-  Future<ChatInfo?> getUserChatsInfo(String userAId, String userBId) async {
+  Future createNewChat(String chatId, ChatSettings chatSettings) async {
+    final DatabaseReference dbRef = dbInstance.ref('chats/$chatId');
+    await dbRef.set(chatSettings.toJson());
+  }
+
+  Future<ChatInfo?> getUserChatsInfo(String userAId, String chatId) async {
     DataSnapshot chatsInfoSnapshot =
-        await dbInstance.ref('users/$userAId/chatsInfo/$userBId').get();
+        await dbInstance.ref('users/$userAId/chatsInfo/$chatId').get();
     if (chatsInfoSnapshot.value != null) {
       final ChatInfo chatInfo = ChatInfo.fromJson(
           Map<String, dynamic>.from(chatsInfoSnapshot.value as Map));
@@ -38,7 +40,8 @@ class DatabaseService {
   }
 
   Future<String> getUserName(String userId) async {
-    final DataSnapshot dataSnapshot = await dbInstance.ref('users/$userId/displayName').get();
+    final DataSnapshot dataSnapshot =
+        await dbInstance.ref('users/$userId/displayName').get();
     return dataSnapshot.value.toString();
   }
 
@@ -52,22 +55,8 @@ class DatabaseService {
     return null;
   }
 
-  // Future updateUserDisplayName(String displayName) async {
-  //   final firebaseUser = FirebaseAuth.instance.currentUser;
-  //   if (firebaseUser != null) {
-  //     final userId = firebaseUser.uid;
-  //     final photoURL = firebaseUser.photoURL ?? '';
-  //     final user = User(
-  //       id: userId,
-  //       displayName: displayName,
-  //       photoUrl: photoURL,
-  //     );
-  //     await addOrUpdateUserInfo(user);
-  //   }
-  // }
-
-  Future sendMessage(String text, String uuid) async {
-    final DatabaseReference dbRef = dbInstance.ref('messages');
+  Future sendMessage(String text, String uuid, String chatId) async {
+    final DatabaseReference dbRef = dbInstance.ref('chats/$chatId/messages');
     final message = Message(
         userId: uuid,
         text: text,
@@ -78,9 +67,8 @@ class DatabaseService {
 
   Stream<List<ChatInfo?>> getChatInfoStream(String userId) =>
       _getStreamByRef('/users/$userId/chatsInfo');
-  // TODO: fix
-  Stream<List<Message?>> get messageStream =>
-      _getStreamByRef<Message>('messages');
+  Stream<List<Message?>> getMessageStream(String chatId) =>
+      _getStreamByRef<Message>('chats/$chatId/messages');
   Stream<List<User?>> get contactsStream => _getStreamByRef<User>('users');
 
   Stream<List<T?>> _getStreamByRef<T>(String refName) {

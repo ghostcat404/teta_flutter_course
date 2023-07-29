@@ -3,9 +3,10 @@ import 'package:chat_appl/pages/chats/components/typing_field.dart';
 import 'package:flutter/material.dart';
 
 class MessagesView extends StatefulWidget {
-  const MessagesView({super.key, required this.messageList});
+  const MessagesView({super.key, required this.messageList, required this.chatId});
 
   final List<dynamic> messageList;
+  final String chatId;
 
   @override
   State<MessagesView> createState() => _MessagesViewState();
@@ -39,7 +40,7 @@ class _MessagesViewState extends State<MessagesView> {
           );
         },
       ),
-      bottomNavigationBar: TypingField(controller: _controller),
+      bottomNavigationBar: TypingField(controller: _controller, chatId: widget.chatId),
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:chat_appl/models/chat_info.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'user.freezed.dart';

@@ -8,6 +8,7 @@ class ChatInfo with _$ChatInfo {
   const factory ChatInfo({
     required String chatId,
     required String userBId,
+    required String chatName,
     required String lastMessage,
   }) = _ChatInfo;
 
