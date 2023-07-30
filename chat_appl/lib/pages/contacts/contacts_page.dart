@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
 class ContactsPage extends StatefulWidget {
-  const ContactsPage({super.key});
+  final User? user;
+
+  const ContactsPage({super.key, required this.user});
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();

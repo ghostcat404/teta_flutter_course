@@ -25,10 +25,27 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription? _sub;
   StreamSubscription? _onMessageStream;
   StreamSubscription? _onBackgroungMessageStream;
+  User? _user;
+
+  @override
+  void initState() {
+    _initUser();
+    _handleIncomingLinks();
+    setupInteractedMessage();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    _onBackgroungMessageStream?.cancel();
+    _onMessageStream?.cancel();
+    super.dispose();
+  }
 
   void _handleMessage(RemoteMessage message) {
     Navigator.of(context).push(
-        PageRouteBuilder(pageBuilder: (context, _, __) => const ChatsPage()));
+        PageRouteBuilder(pageBuilder: (context, _, __) => ChatsPage(user: _user!)));
   }
 
   Future<void> setupInteractedMessage() async {
@@ -44,32 +61,17 @@ class _HomePageState extends State<HomePage> {
     _onMessageStream = FirebaseMessaging.onMessage.listen(_handleMessage);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _handleIncomingLinks();
-    _initUser();
-    setupInteractedMessage();
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    _onBackgroungMessageStream?.cancel();
-    _onMessageStream?.cancel();
-    super.dispose();
-  }
-
-  void _initUser() async {
-    final currUser = FirebaseAuth.instance.currentUser;
+  Future _initUser() async {
+    final currFbUser = FirebaseAuth.instance.currentUser;
     final DatabaseService dbService = GetIt.instance<DatabaseService>();
-    final User? user = await dbService.getUser(currUser!.uid);
-    if (user == null) {
+    final currUser = await dbService.getUser(currFbUser!.uid);
+    if (currUser == null) {
       dbService.addOrUpdateUserInfo(User(
           id: FirebaseAuth.instance.currentUser!.uid,
           displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
-          photoUrl: '',));
+          photoUrl: '',));        
     }
+    _user = (await dbService.getUser(currFbUser.uid))!;
   }
 
   void _handleIncomingLinks() {
@@ -92,9 +94,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: <Widget>[
-        const ContactsPage(),
-        const ChatsPage(),
-        const SettingsPage(),
+        ContactsPage(user: _user),
+        ChatsPage(user: _user,),
+        SettingsPage(user: _user),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {

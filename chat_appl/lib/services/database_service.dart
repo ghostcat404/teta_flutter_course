@@ -26,6 +26,8 @@ class DatabaseService {
   Future createNewChat(String chatId, ChatSettings chatSettings) async {
     final DatabaseReference dbRef = dbInstance.ref('chats/$chatId');
     await dbRef.set(chatSettings.toJson());
+    final DatabaseReference msgRef =  dbRef.child('messages');
+    msgRef.push().set(null);
   }
 
   Future<ChatInfo?> getUserChatsInfo(String userAId, String chatId) async {
@@ -55,10 +57,10 @@ class DatabaseService {
     return null;
   }
 
-  Future sendMessage(String text, String uuid, String chatId) async {
+  Future sendMessage(String text, String userDisplayName, String chatId) async {
     final DatabaseReference dbRef = dbInstance.ref('chats/$chatId/messages');
     final message = Message(
-        userId: uuid,
+        userDisplayName: userDisplayName,
         text: text,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     final messageRef = dbRef.push();

@@ -3,9 +3,8 @@ import 'dart:math';
 import 'package:chat_appl/models/chat_info.dart';
 import 'package:chat_appl/models/chat_settings.dart';
 import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/chats/dialog_screen.dart';
+import 'package:chat_appl/pages/chats/chat_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
-import 'package:chat_appl/shimmers/chats_shimmers.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -13,7 +12,9 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 class ChatsPage extends StatefulWidget {
-  const ChatsPage({super.key});
+  final User? user;
+
+  const ChatsPage({super.key, required this.user});
 
   @override
   State<ChatsPage> createState() => _ChatsPageState();
@@ -32,7 +33,7 @@ class _ChatsPageState extends State<ChatsPage> {
   void createChatWithUser() async {
     final User? userA =
         await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
-    const String userBId = 'sFv4LRlpipaiTBchN3d5vGv5cNu1';
+    const String userBId = 'NV2mSyB0HChIYCWN3kKmpfiZol82';
     final User? userB = await dbService.getUser(userBId);
     final String chatId =
         md5.convert(utf8.encode(userA!.id + userB!.id)).toString();
@@ -95,15 +96,23 @@ class _ChatsPageState extends State<ChatsPage> {
                               bool dataIsLoaded = (messageSnapshot.hasData &&
                                   messageSnapshot.data != null &&
                                   messageSnapshot.data!.isNotEmpty);
-                              return AnimatedSwitcher(
-                                duration: const Duration(seconds: 1),
-                                child: dataIsLoaded
-                                    ? MessagesView(
-                                        messageList: messageSnapshot.data!,
-                                        chatId: chatInfo.chatId,
-                                      )
-                                    : const ListMessagesShimmer(),
+                              return ChatPage(
+                                messageList: dataIsLoaded
+                                  ? messageSnapshot.data!
+                                  : [],
+                                chatId: chatInfo.chatId,
+                                user: widget.user,
                               );
+                              // return AnimatedSwitcher(
+                              //   duration: const Duration(seconds: 1),
+                              //   child: dataIsLoaded
+                              //       ?
+                              //       ChatPage(
+                              //           messageList: messageSnapshot.data!,
+                              //           chatId: chatInfo.chatId,
+                              //         )
+                              //       : const ListMessagesShimmer(),
+                              // );
                             },
                             stream: dbService.getMessageStream(chatInfo.chatId),
                           ),

@@ -15,7 +15,9 @@ import 'package:webview_flutter/webview_flutter.dart'; // Import for Android fea
 // Import for iOS features.
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final User? user;
+
+  const SettingsPage({super.key, required this.user});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
