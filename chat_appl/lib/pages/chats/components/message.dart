@@ -1,6 +1,5 @@
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:string_to_hex/string_to_hex.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -17,6 +16,7 @@ class MessageWidget extends StatefulWidget {
 
 class _MessageWidgetState extends State<MessageWidget> {
   @override
+  // TODO: fix diff users
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -24,7 +24,7 @@ class _MessageWidgetState extends State<MessageWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: FirebaseAuth.instance.currentUser!.uid == widget.user!.id
+            mainAxisAlignment: widget.message.userDisplayName == widget.user!.displayName
               ? MainAxisAlignment.end
               : MainAxisAlignment.start,
             children: [
@@ -50,15 +50,29 @@ class _MessageWidgetState extends State<MessageWidget> {
             ],
           ),
           const SizedBox(height: 8),
+          // TODO: fix long messages
           Row(
-            mainAxisAlignment: FirebaseAuth.instance.currentUser!.uid == widget.user!.id
+            mainAxisAlignment: widget.message.userDisplayName == widget.user!.displayName
               ? MainAxisAlignment.end
               : MainAxisAlignment.start,
             children: [
-              // TODO: style
-              Text(
-                widget.message.text,
-                style: const TextStyle(fontSize: 16.0),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.indigoAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.message.text,
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           )

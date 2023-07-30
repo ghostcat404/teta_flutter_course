@@ -1,7 +1,9 @@
 import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/pages/chats/chats_page.dart';
 import 'package:chat_appl/pages/chats/components/message.dart';
 import 'package:chat_appl/pages/chats/components/typing_field.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage(
@@ -32,6 +34,12 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       key: const ValueKey('ChatPage'),
       appBar: AppBar(
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Get.previousRoute == ''
+              ? Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, _, __) => ChatsPage(user: widget.user)))
+              :  Navigator.of(context).pop()
+            ),
         title: const Text('Chat with user'),
       ),
       body: widget.messageList.isNotEmpty
@@ -40,7 +48,7 @@ class _ChatPageState extends State<ChatPage> {
               itemCount: widget.messageList.length,
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: MessageWidget(
                       message: widget.messageList[index],
                       user: widget.user,

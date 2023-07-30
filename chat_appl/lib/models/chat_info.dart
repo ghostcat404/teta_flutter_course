@@ -10,6 +10,7 @@ class ChatInfo with _$ChatInfo {
     required String userBId,
     required String chatName,
     required String lastMessage,
+    required int? lastMessageTimestamp,
   }) = _ChatInfo;
 
   factory ChatInfo.fromJson(Map<String, dynamic> json) => _$ChatInfoFromJson(json);

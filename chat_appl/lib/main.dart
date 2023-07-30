@@ -39,7 +39,7 @@ void main() async {
     print('User declined or has not accepted permission');
   }
   final fcmToken = await firebaseMessaging.getToken();
-  // print(fcmToken);
+  print('fcmToken: $fcmToken');
 
   FirebaseUIAuth.configureProviders([
     PhoneAuthProvider(),

@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/pages/chats/chat_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -43,9 +45,16 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void _handleMessage(RemoteMessage message) {
-    Navigator.of(context).push(
-        PageRouteBuilder(pageBuilder: (context, _, __) => ChatsPage(user: _user!)));
+  void _handleMessage(RemoteMessage message) async {
+    final Map<String, dynamic> messageData =
+        Map<String, dynamic>.from(message.data);
+    final List<Message?> messageList = await GetIt.instance<DatabaseService>()
+        .getMessageListOnce(messageData['chatId']);
+    Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (context, _, __) => ChatPage(
+            messageList: messageList,
+            chatId: messageData['chatId'],
+            user: _user!)));
   }
 
   Future<void> setupInteractedMessage() async {
@@ -65,13 +74,13 @@ class _HomePageState extends State<HomePage> {
     final currFbUser = FirebaseAuth.instance.currentUser;
     final DatabaseService dbService = GetIt.instance<DatabaseService>();
     final currUser = await dbService.getUser(currFbUser!.uid);
-    if (currUser == null) {
-      dbService.addOrUpdateUserInfo(User(
-          id: FirebaseAuth.instance.currentUser!.uid,
-          displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
-          photoUrl: '',));        
-    }
-    _user = (await dbService.getUser(currFbUser.uid))!;
+    final User newUser = User(
+      id: FirebaseAuth.instance.currentUser!.uid,
+      displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
+      photoUrl: '',
+    );
+    if (currUser == null) dbService.addOrUpdateUserInfo(newUser);
+    _user = currUser ?? newUser;
   }
 
   void _handleIncomingLinks() {
@@ -95,7 +104,9 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: <Widget>[
         ContactsPage(user: _user),
-        ChatsPage(user: _user,),
+        ChatsPage(
+          user: _user,
+        ),
         SettingsPage(user: _user),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(

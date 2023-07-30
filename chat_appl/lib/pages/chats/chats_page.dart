@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'dart:convert';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:crypto/crypto.dart';
 
 class ChatsPage extends StatefulWidget {
@@ -46,14 +47,16 @@ class _ChatsPageState extends State<ChatsPage> {
               chatId: chatId,
               userBId: userB.id,
               chatName: userB.displayName,
-              lastMessage: 'lastMsg'));
+              lastMessage: '',
+              lastMessageTimestamp: null));
       await dbService.addOrUpdateUserChatsInfo(
           userB.id,
           ChatInfo(
               chatId: chatId,
               userBId: userA.id,
-              chatName: userB.displayName,
-              lastMessage: 'lastMsg'));
+              chatName: userA.displayName,
+              lastMessage: '',
+              lastMessageTimestamp: null));
       await dbService.createNewChat(chatId,
           ChatSettings(chatId: chatId, userAId: userA.id, userBId: userB.id));
     }
@@ -85,21 +88,26 @@ class _ChatsPageState extends State<ChatsPage> {
                   final ChatInfo? chatInfo = chatInfoSnapshot.data![index];
                   return ListTile(
                     title: Text(chatInfo!.chatName),
-                    subtitle: Text(
-                        '${chatInfo.lastMessage.substring(0, min(chatInfo.lastMessage.length, 16))}...'),
+                    trailing: Text(chatInfo.lastMessageTimestamp == null
+                        ? ''
+                        : timeago
+                            .format(DateTime.fromMillisecondsSinceEpoch(
+                                chatInfo.lastMessageTimestamp!))
+                            .toString()),
+                    subtitle: Text(chatInfo.lastMessage == ''
+                        ? ''
+                        : '${chatInfo.lastMessage.substring(0, min(chatInfo.lastMessage.length, 16))}...'),
                     onTap: () {
                       Navigator.of(context).push(
                         PageRouteBuilder(
                           pageBuilder: (context, _, __) => StreamBuilder(
                             builder: (context, messageSnapshot) {
-                              // TODO: Fix!
                               bool dataIsLoaded = (messageSnapshot.hasData &&
                                   messageSnapshot.data != null &&
                                   messageSnapshot.data!.isNotEmpty);
                               return ChatPage(
-                                messageList: dataIsLoaded
-                                  ? messageSnapshot.data!
-                                  : [],
+                                messageList:
+                                    dataIsLoaded ? messageSnapshot.data! : [],
                                 chatId: chatInfo.chatId,
                                 user: widget.user,
                               );

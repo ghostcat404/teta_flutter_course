@@ -26,7 +26,7 @@ class DatabaseService {
   Future createNewChat(String chatId, ChatSettings chatSettings) async {
     final DatabaseReference dbRef = dbInstance.ref('chats/$chatId');
     await dbRef.set(chatSettings.toJson());
-    final DatabaseReference msgRef =  dbRef.child('messages');
+    final DatabaseReference msgRef = dbRef.child('messages');
     msgRef.push().set(null);
   }
 
@@ -57,14 +57,70 @@ class DatabaseService {
     return null;
   }
 
+  Future<List<Message?>> getMessageListOnce(String chatId) async {
+    final DataSnapshot messagesSnapshot = await dbInstance.ref('chats/$chatId/messages').get();
+    final Map<dynamic, dynamic> messages = Map<dynamic, dynamic>.from(messagesSnapshot.value! as Map);
+    final List<Message?> messageList = [];
+    if (messagesSnapshot.value != null) {
+      messages.forEach((key, value) {
+          final Message? currentMessage = createInstanceOf<Message>(Map<String, dynamic>.from(value));
+          messageList.add(currentMessage);
+      });
+      sortInstancesOf<Message>(messageList);
+    }
+    return messageList;
+  }
+
   Future sendMessage(String text, String userDisplayName, String chatId) async {
-    final DatabaseReference dbRef = dbInstance.ref('chats/$chatId/messages');
+    final DatabaseReference chatDbRef = dbInstance.ref('chats/$chatId');
+    final DatabaseReference usersRef = dbInstance.ref('users');
+
+    final DataSnapshot chatSettingsSnapshot = await chatDbRef.get();
+    final ChatSettings chatSettings = ChatSettings.fromJson(
+        Map<String, dynamic>.from(chatSettingsSnapshot.value! as Map));
+
+    final DatabaseReference refUserA = usersRef.child(chatSettings.userAId);
+    final DatabaseReference refUserB = usersRef.child(chatSettings.userBId);
+    final DataSnapshot snapshotUserA = await refUserA.get();
+    final DataSnapshot snapshotUserB = await refUserB.get();
+    final User userA =
+        User.fromJson(Map<String, dynamic>.from(snapshotUserA.value! as Map));
+    final User userB =
+        User.fromJson(Map<String, dynamic>.from(snapshotUserB.value! as Map));
+
+    final DataSnapshot snapshotChatInfoUserA =
+        await refUserA.child('chatsInfo/$chatId').get();
+    final DataSnapshot snapshotChatInfoUserB =
+        await refUserB.child('chatsInfo/$chatId').get();
+    final ChatInfo chatInfoUserA = ChatInfo.fromJson(
+        Map<String, dynamic>.from(snapshotChatInfoUserA.value! as Map));
+    final ChatInfo chatInfoUserB = ChatInfo.fromJson(
+        Map<String, dynamic>.from(snapshotChatInfoUserB.value! as Map));
+
+    final DatabaseReference chatMessagesRef = chatDbRef.child('messages');
+    final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final message = Message(
         userDisplayName: userDisplayName,
         text: text,
-        timestamp: DateTime.now().millisecondsSinceEpoch);
-    final messageRef = dbRef.push();
+        timestamp: currentTimestamp);
+    final messageRef = chatMessagesRef.push();
     await messageRef.set(message.toJson());
+    await addOrUpdateUserChatsInfo(
+        userA.id,
+        ChatInfo(
+            chatId: chatId,
+            userBId: userB.id,
+            chatName: chatInfoUserA.chatName,
+            lastMessage: text,
+            lastMessageTimestamp: currentTimestamp));
+    await addOrUpdateUserChatsInfo(
+        userB.id,
+        ChatInfo(
+            chatId: chatId,
+            userBId: userA.id,
+            chatName: chatInfoUserB.chatName,
+            lastMessage: text,
+            lastMessageTimestamp: currentTimestamp));
   }
 
   Stream<List<ChatInfo?>> getChatInfoStream(String userId) =>
@@ -75,6 +131,7 @@ class DatabaseService {
 
   Stream<List<T?>> _getStreamByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
+      // TODO: use it if connection is on but there is no values
       List<T?> dataList = [];
       if (event.snapshot.value != null) {
         final firebaseMessages = Map<dynamic, dynamic>.from(
