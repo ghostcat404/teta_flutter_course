@@ -5,6 +5,7 @@ import 'package:chat_appl/models/chat_settings.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/chats/chat_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/shimmers/chats_shimmers.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -103,24 +104,17 @@ class _ChatsPageState extends State<ChatsPage> {
                           pageBuilder: (context, _, __) => StreamBuilder(
                             builder: (context, messageSnapshot) {
                               bool dataIsLoaded = (messageSnapshot.hasData &&
-                                  messageSnapshot.data != null &&
-                                  messageSnapshot.data!.isNotEmpty);
-                              return ChatPage(
-                                messageList:
-                                    dataIsLoaded ? messageSnapshot.data! : [],
-                                chatId: chatInfo.chatId,
-                                user: widget.user,
+                                  messageSnapshot.data != null);
+                              return AnimatedSwitcher(
+                                duration: const Duration(seconds: 1),
+                                child: dataIsLoaded
+                                    ? ChatPage(
+                                        messageList: messageSnapshot.data!,
+                                        chatId: chatInfo.chatId,
+                                        user: widget.user,
+                                      )
+                                    : const ListMessagesShimmer(),
                               );
-                              // return AnimatedSwitcher(
-                              //   duration: const Duration(seconds: 1),
-                              //   child: dataIsLoaded
-                              //       ?
-                              //       ChatPage(
-                              //           messageList: messageSnapshot.data!,
-                              //           chatId: chatInfo.chatId,
-                              //         )
-                              //       : const ListMessagesShimmer(),
-                              // );
                             },
                             stream: dbService.getMessageStream(chatInfo.chatId),
                           ),
