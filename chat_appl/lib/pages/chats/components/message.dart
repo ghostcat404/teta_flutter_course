@@ -16,7 +16,6 @@ class MessageWidget extends StatefulWidget {
 
 class _MessageWidgetState extends State<MessageWidget> {
   @override
-  // TODO: fix when user == null (connection lost)
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),

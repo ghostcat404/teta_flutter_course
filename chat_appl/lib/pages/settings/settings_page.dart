@@ -47,7 +47,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadName();
   }
 
-  // TODO: fix null while loading
   _loadAvatar() async {
     final User? currUser =
         await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);

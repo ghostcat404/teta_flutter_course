@@ -15,6 +15,22 @@ import 'package:chat_appl/pages/chats/chats_page.dart';
 import 'package:chat_appl/pages/contacts/contacts_page.dart';
 import 'package:chat_appl/pages/settings/settings_page.dart';
 
+const List<Widget> mainPageDestinations = <Widget>[
+  NavigationDestination(
+    icon: Icon(Icons.contacts),
+    label: 'Contacts',
+  ),
+  NavigationDestination(
+    icon: Icon(Icons.chat),
+    label: 'Chats',
+  ),
+  NavigationDestination(
+    selectedIcon: Icon(Icons.settings),
+    icon: Icon(Icons.settings),
+    label: 'Settings',
+  ),
+];
+
 class HomePage extends StatefulWidget {
   final int currentPageIndex;
   const HomePage({super.key, this.currentPageIndex = 0});
@@ -104,46 +120,71 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      // TODO: add data chaching and sync on background or replacing with condition if user == nul then FutureBuilder else main
-      future: _initUser(),
-      builder: (context, userSnapshot) {
-        if (userSnapshot.connectionState == ConnectionState.done && userSnapshot.hasData) {
-          return Scaffold(
-            body: <Widget>[
-              ContactsPage(user: _user),
-              ChatsPage(
-                user: _user,
-              ),
-              SettingsPage(user: _user),
-            ][currentPageIndex],
-            bottomNavigationBar: NavigationBar(
-              onDestinationSelected: (int index) {
-                setState(() {
-                  currentPageIndex = index;
-                });
-              },
-              selectedIndex: currentPageIndex,
-              destinations: const <Widget>[
-                NavigationDestination(
-                  icon: Icon(Icons.contacts),
-                  label: 'Contacts',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.chat),
-                  label: 'Chats',
-                ),
-                NavigationDestination(
-                  selectedIcon: Icon(Icons.settings),
-                  icon: Icon(Icons.settings),
-                  label: 'Settings',
-                ),
-              ],
-            ),
+    return _user == null
+        ? FutureBuilder(
+            future: _initUser(),
+            builder: (context, userSnapshot) {
+              if (userSnapshot.connectionState == ConnectionState.done &&
+                  userSnapshot.hasData) {
+                return MainPage(
+                  user: _user!,
+                  currentPageIndex: currentPageIndex,
+                );
+              }
+              return Scaffold(
+                  body: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  bottomNavigationBar:
+                      NavigationBar(destinations: mainPageDestinations));
+            })
+        : MainPage(
+            user: _user!,
+            currentPageIndex: currentPageIndex,
           );
-        }
-        return const Center(child: CircularProgressIndicator(),);
-      }
+  }
+}
+
+class MainPage extends StatefulWidget {
+  final int currentPageIndex;
+  final User user;
+  const MainPage({
+    super.key,
+    required this.user,
+    this.currentPageIndex = 0,
+  });
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  int currentPageIndex = 0;
+
+  @override
+  void initState() {
+    currentPageIndex = widget.currentPageIndex;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: <Widget>[
+        ContactsPage(user: widget.user),
+        ChatsPage(
+          user: widget.user,
+        ),
+        SettingsPage(user: widget.user),
+      ][currentPageIndex],
+      bottomNavigationBar: NavigationBar(
+          onDestinationSelected: (int index) {
+            setState(() {
+              currentPageIndex = index;
+            });
+          },
+          selectedIndex: currentPageIndex,
+          destinations: mainPageDestinations),
     );
   }
 }
