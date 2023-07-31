@@ -24,7 +24,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   final FirebaseDatabase dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
-  dbInstance.setPersistenceEnabled(true);
+  // dbInstance.setPersistenceEnabled(true);
 
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   NotificationSettings notificationSettings = await firebaseMessaging.requestPermission(

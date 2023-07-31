@@ -1,7 +1,7 @@
 import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/chats/chats_page.dart';
 import 'package:chat_appl/pages/chats/components/message.dart';
 import 'package:chat_appl/pages/chats/components/typing_field.dart';
+import 'package:chat_appl/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -37,9 +37,14 @@ class _ChatPageState extends State<ChatPage> {
         leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Get.previousRoute == ''
-              ? Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, _, __) => ChatsPage(user: widget.user)))
-              :  Navigator.of(context).pop()
-            ),
+                // TODO: fix back icon when push HomePage
+                ? Navigator.of(context).pushAndRemoveUntil(
+                    PageRouteBuilder(
+                        pageBuilder: (context, _, __) => const HomePage(
+                              currentPageIndex: 1,
+                            )),
+                    (r) => false)
+                : Navigator.of(context).pop()),
         title: const Text('Chat with user'),
       ),
       body: widget.messageList.isNotEmpty

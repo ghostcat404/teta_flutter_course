@@ -16,7 +16,8 @@ import 'package:chat_appl/pages/contacts/contacts_page.dart';
 import 'package:chat_appl/pages/settings/settings_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int currentPageIndex;
+  const HomePage({super.key, this.currentPageIndex = 0});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    currentPageIndex = widget.currentPageIndex;
     _initUser();
     _handleIncomingLinks();
     setupInteractedMessage();
