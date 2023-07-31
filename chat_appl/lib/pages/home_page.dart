@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
     _onMessageStream = FirebaseMessaging.onMessage.listen(_handleMessage);
   }
 
-  Future _initUser() async {
+  Future<User> _initUser() async {
     final currFbUser = FirebaseAuth.instance.currentUser;
     final DatabaseService dbService = GetIt.instance<DatabaseService>();
     final currUser = await dbService.getUser(currFbUser!.uid);
@@ -83,6 +83,7 @@ class _HomePageState extends State<HomePage> {
     );
     if (currUser == null) dbService.addOrUpdateUserInfo(newUser);
     _user = currUser ?? newUser;
+    return _user!;
   }
 
   void _handleIncomingLinks() {
@@ -103,37 +104,46 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: <Widget>[
-        ContactsPage(user: _user),
-        ChatsPage(
-          user: _user,
-        ),
-        SettingsPage(user: _user),
-      ][currentPageIndex],
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.contacts),
-            label: 'Contacts',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat),
-            label: 'Chats',
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.settings),
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
+    return FutureBuilder(
+      // TODO: add data chaching and sync on background or replacing with condition if user == nul then FutureBuilder else main
+      future: _initUser(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.done && userSnapshot.hasData) {
+          return Scaffold(
+            body: <Widget>[
+              ContactsPage(user: _user),
+              ChatsPage(
+                user: _user,
+              ),
+              SettingsPage(user: _user),
+            ][currentPageIndex],
+            bottomNavigationBar: NavigationBar(
+              onDestinationSelected: (int index) {
+                setState(() {
+                  currentPageIndex = index;
+                });
+              },
+              selectedIndex: currentPageIndex,
+              destinations: const <Widget>[
+                NavigationDestination(
+                  icon: Icon(Icons.contacts),
+                  label: 'Contacts',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.chat),
+                  label: 'Chats',
+                ),
+                NavigationDestination(
+                  selectedIcon: Icon(Icons.settings),
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ],
+            ),
+          );
+        }
+        return const Center(child: CircularProgressIndicator(),);
+      }
     );
   }
 }
