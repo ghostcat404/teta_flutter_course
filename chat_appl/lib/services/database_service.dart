@@ -131,7 +131,6 @@ class DatabaseService {
 
   Stream<List<T?>> _getStreamByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
-      // TODO: use it if connection is on but there is no values
       List<T?> dataList = [];
       if (event.snapshot.value != null) {
         final firebaseMessages = Map<dynamic, dynamic>.from(

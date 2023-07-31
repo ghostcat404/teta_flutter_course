@@ -35,6 +35,7 @@ class _ChatsPageState extends State<ChatsPage> {
   void createChatWithUser() async {
     final User? userA =
         await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    // TODO: replace with esarch user by username or nickname
     const String userBId = 'NV2mSyB0HChIYCWN3kKmpfiZol82';
     final User? userB = await dbService.getUser(userBId);
     final String chatId =

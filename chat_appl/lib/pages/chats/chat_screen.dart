@@ -37,7 +37,7 @@ class _ChatPageState extends State<ChatPage> {
         leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Get.previousRoute == ''
-                // TODO: fix back icon when push HomePage
+                // TODO: fix 3 tap to go to homepage
                 ? Navigator.of(context).pushAndRemoveUntil(
                     PageRouteBuilder(
                         pageBuilder: (context, _, __) => const HomePage(
