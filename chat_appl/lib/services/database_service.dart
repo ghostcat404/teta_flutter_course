@@ -59,9 +59,9 @@ class DatabaseService {
 
   Future<List<Message?>> getMessageListOnce(String chatId) async {
     final DataSnapshot messagesSnapshot = await dbInstance.ref('chats/$chatId/messages').get();
-    final Map<dynamic, dynamic> messages = Map<dynamic, dynamic>.from(messagesSnapshot.value! as Map);
     final List<Message?> messageList = [];
     if (messagesSnapshot.value != null) {
+      final Map<dynamic, dynamic> messages = Map<dynamic, dynamic>.from(messagesSnapshot.value! as Map);
       messages.forEach((key, value) {
           final Message? currentMessage = createInstanceOf<Message>(Map<String, dynamic>.from(value));
           messageList.add(currentMessage);

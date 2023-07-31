@@ -76,6 +76,7 @@ class _TypingFieldState extends State<TypingField>
             child: IconButton(
               onPressed: () {
                 _sendButtonAnimationController.forward(from: 0);
+                // TODO: fix null value of userDisplayName
                 dbService.sendMessage(widget.controller.text,
                     widget.userDisplayName!, widget.chatId);
                 widget.controller.text = '';

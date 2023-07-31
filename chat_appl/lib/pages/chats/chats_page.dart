@@ -1,22 +1,25 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:chat_appl/components/avatar_circle.dart';
 import 'package:chat_appl/models/chat_info.dart';
 import 'package:chat_appl/models/chat_settings.dart';
+import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/chats/chat_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
 import 'package:chat_appl/shimmers/chats_shimmers.dart';
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'dart:convert';
+import 'package:searchfield/searchfield.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:crypto/crypto.dart';
 
 class ChatsPage extends StatefulWidget {
-  final User? user;
-
   const ChatsPage({super.key, required this.user});
+
+  final User? user;
 
   @override
   State<ChatsPage> createState() => _ChatsPageState();
@@ -25,6 +28,14 @@ class ChatsPage extends StatefulWidget {
 class _ChatsPageState extends State<ChatsPage> {
   late DatabaseService dbService;
 
+  final TextEditingController _searchFieldController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchFieldController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     final GetIt getIt = GetIt.instance;
@@ -32,12 +43,9 @@ class _ChatsPageState extends State<ChatsPage> {
     super.initState();
   }
 
-  void createChatWithUser() async {
+  void createChatWithUser(User? userB) async {
     final User? userA =
         await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
-    // TODO: replace with esarch user by username or nickname
-    const String userBId = 'NV2mSyB0HChIYCWN3kKmpfiZol82';
-    final User? userB = await dbService.getUser(userBId);
     final String chatId =
         md5.convert(utf8.encode(userA!.id + userB!.id)).toString();
     final ChatInfo? userAChatInfo =
@@ -62,6 +70,88 @@ class _ChatsPageState extends State<ChatsPage> {
       await dbService.createNewChat(chatId,
           ChatSettings(chatId: chatId, userAId: userA.id, userBId: userB.id));
     }
+    final List<Message?> messageList =
+        await GetIt.instance<DatabaseService>().getMessageListOnce(chatId);
+    Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (context, _, __) =>
+            ChatPage(messageList: messageList, chatId: chatId, user: userA)));
+  }
+
+  void selectUserToCreateAChat() {
+    Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (context, _, __) => StreamBuilder(
+            stream: dbService.contactsStream,
+            builder: (context, snapshot) {
+              final bool dataIsLoaded =
+                  snapshot.hasData && snapshot.data != null;
+              return Scaffold(
+                  appBar: AppBar(
+                    title: const Text('Chats'),
+                  ),
+                  body: dataIsLoaded
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SearchField(
+                                        onSuggestionTap: (SearchFieldListItem
+                                                searchFieldItem) =>
+                                            createChatWithUser(
+                                                searchFieldItem.item),
+                                        controller: _searchFieldController,
+                                        suggestions: snapshot.data!
+                                            .map((user) {
+                                              if (FirebaseAuth.instance
+                                                      .currentUser!.uid !=
+                                                  user!.id) {
+                                                return SearchFieldListItem<
+                                                        User?>(user.displayName,
+                                                    item: user,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Row(
+                                                        children: [
+                                                          ProfileAvatar(
+                                                              hasAvatar:
+                                                                  user.photoUrl ==
+                                                                          ''
+                                                                      ? false
+                                                                      : true,
+                                                              avatarUrl: user
+                                                                  .photoUrl),
+                                                          Text(user.displayName)
+                                                        ],
+                                                      ),
+                                                    ));
+                                              } else {
+                                                return SearchFieldListItem('');
+                                              }
+                                            })
+                                            .where((element) =>
+                                                element.searchKey != '')
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                      onPressed: () =>
+                                          _searchFieldController.clear(),
+                                      icon: const Icon(Icons.clear))
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
+                      : const Text('Connection is unavailable'));
+            })));
   }
 
   @override
@@ -73,7 +163,7 @@ class _ChatsPageState extends State<ChatsPage> {
             IconButton(
               icon: const Icon(Icons.add),
               iconSize: 25.0,
-              onPressed: createChatWithUser,
+              onPressed: selectUserToCreateAChat,
             )
           ],
         ),
@@ -139,7 +229,17 @@ class _ChatsPageState extends State<ChatsPage> {
                 },
               );
             } else {
-              return const Text('There is no chats yet');
+              return const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('There is no chats yet'),
+                    ],
+                  ),
+                ],
+              );
             }
           },
           stream: dbService

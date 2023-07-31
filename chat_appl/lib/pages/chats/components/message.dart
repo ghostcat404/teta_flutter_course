@@ -59,7 +59,7 @@ class _MessageWidgetState extends State<MessageWidget> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.indigoAccent.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(64.0),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
