@@ -1,3 +1,4 @@
+import 'package:chat_appl/models/db_user.dart';
 import 'package:isar/isar.dart';
 
 class LocalDatabaseService {
@@ -6,4 +7,10 @@ class LocalDatabaseService {
 
   Future clearAllCache() async =>
       await isarDbInstance.writeTxn(() async => await isarDbInstance.clear());
+
+  Future<List<DbUser?>> getAllUsers() async {
+    final List<DbUser?> users = await isarDbInstance.txn(() async =>
+        await isarDbInstance.collection<DbUser>().where().findAll());
+    return users.toList();
+  }
 }

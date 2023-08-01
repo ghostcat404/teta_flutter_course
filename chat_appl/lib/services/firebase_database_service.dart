@@ -141,7 +141,7 @@ class FirebaseDatabaseService {
         firebaseMessages.forEach((key, value) {
           final currentData = Map<String, dynamic>.from(value);
           final T? instance = createInstanceOf<T>(currentData);
-          // if (instance != null) cacheInstanceOf<T>(instance);
+          if (instance != null) cacheInstanceOf<T>(instance);
           dataList.add(instance);
         });
         sortInstancesOf<T>(dataList);
