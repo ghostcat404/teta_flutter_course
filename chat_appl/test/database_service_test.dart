@@ -1,7 +1,7 @@
 import 'package:chat_appl/models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chat_appl/services/firebase_database_service.dart';
+import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import "package:firebase_database_mocks/firebase_database_mocks.dart";
 
 void main() {

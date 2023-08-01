@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:chat_appl/models/db_user.dart';
 import 'package:chat_appl/pages/home_page.dart';
-import 'package:chat_appl/services/firebase_database_service.dart';
+import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';

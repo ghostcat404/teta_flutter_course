@@ -65,6 +65,7 @@ dependencies:
   loading_animation_widget: ^1.2.0+4
   searchfield: ^0.8.3
   connectivity_plus: ^4.0.1
+  dropdown_button2: ^2.3.7
 
 dev_dependencies:
   flutter_test:

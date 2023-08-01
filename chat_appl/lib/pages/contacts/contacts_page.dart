@@ -1,6 +1,6 @@
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/components/avatar_circle.dart';
-import 'package:chat_appl/services/firebase_database_service.dart';
+import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';

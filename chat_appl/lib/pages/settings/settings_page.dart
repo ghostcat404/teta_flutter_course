@@ -4,8 +4,8 @@ import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/components/avatar_circle.dart';
 import 'package:chat_appl/pages/home_page.dart';
 import 'package:chat_appl/pages/settings/geo_location_page.dart';
-import 'package:chat_appl/services/database_service.dart';
-import 'package:chat_appl/services/firebase_database_service.dart';
+import 'package:chat_appl/services/db_services/database_service.dart';
+import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String _displayName = '';
   bool _isAvatar = false;
   bool _isEdit = false;
+  bool isDropDowned = false;
 
   @override
   void dispose() {
@@ -95,13 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final User? currUser =
         await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
     late String displayName;
-    if (_controller.text != '') {
-      displayName = _controller.text;
-      // currUser!.displayName = displayName;
-      // dbService.updateUserDisplayName(displayName);
-    } else {
-      displayName = FirebaseAuth.instance.currentUser!.uid;
-    }
+    displayName = _controller.text != '' ? _controller.text : _displayName;
     dbService.addOrUpdateUserInfo(User(
       id: currUser!.id,
       displayName: displayName,
@@ -139,117 +134,182 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.of(context).push(PageRouteBuilder(
-                    pageBuilder: (context, _, __) => FutureBuilder(
-                        future: clearAllCache(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            Navigator.of(context).pop();
-                            return const HomePage(
-                              currentPageIndex: 2,
-                            );
-                          }
-                          return Scaffold(
-                              appBar: AppBar(
-                                title: const Text('Settings'),
-                              ),
-                              body: const Column(
-                                children: [
-                                  Center(
-                                      child: Text(
-                                          'Cache deleting is in progress')),
-                                  Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ],
-                              ));
-                        })));
-                clearAllCache;
-              },
-              icon: const Icon(Icons.cleaning_services)),
-          IconButton(
-              onPressed: () {
-                Navigator.of(context).push(PageRouteBuilder(
-                  pageBuilder: (context, _, __) => Scaffold(
-                    appBar: AppBar(
-                      title: const Text('Share profile'),
-                    ),
-                    body: Column(
+      // TODO: move actions to separate widget
+      appBar: AppBar(title: const Text('Settings'), actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: DropdownButtonHideUnderline(
+            child: ButtonTheme(
+              alignedDropdown: true,
+              child: DropdownButton(
+                borderRadius: BorderRadius.circular(32.0),
+                items: [
+                  DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value: 'clear_cache',
+                    child: Row(
                       children: [
-                        Center(
-                          child: QrImageView(
-                            data: FirebaseAuth.instance.currentUser!.uid,
-                            version: QrVersions.auto,
-                            size: 300.0,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 16.0,
-                        ),
-                        TextButton(
-                            onPressed: () async {
-                              await Clipboard.setData(ClipboardData(
-                                  text:
-                                      FirebaseAuth.instance.currentUser!.uid));
+                        IconButton(
+                            onPressed: () {
+                              Navigator.of(context).push(PageRouteBuilder(
+                                  pageBuilder: (context, _, __) =>
+                                      FutureBuilder(
+                                          future: clearAllCache(),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.done) {
+                                              Navigator.of(context).pop();
+                                              return const HomePage(
+                                                currentPageIndex: 2,
+                                              );
+                                            }
+                                            return Scaffold(
+                                                appBar: AppBar(
+                                                  title: const Text('Settings'),
+                                                ),
+                                                body: const Column(
+                                                  children: [
+                                                    Center(
+                                                        child: Text(
+                                                            'Cache deleting is in progress')),
+                                                    Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  ],
+                                                ));
+                                          })));
+                              clearAllCache;
                             },
-                            child: const Text('Copy to clipborad'))
+                            icon: const Icon(Icons.cleaning_services)),
+                        const Text('Clear Cache')
                       ],
                     ),
                   ),
-                ));
-              },
-              icon: const Icon(Icons.qr_code)),
-          IconButton(
-              onPressed: () => Navigator.of(context).push(PageRouteBuilder(
-                  pageBuilder: (context, _, __) => const GeolocatorWidget())),
-              icon: const Icon(Icons.location_on_outlined)),
-          _isEdit
-              ? TextButton(onPressed: _done, child: const Text('Done'))
-              : TextButton(onPressed: _edit, child: const Text('Edit')),
-        ],
-      ),
+                  DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value: 'qr_code',
+                    child: Row(
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              Navigator.of(context).push(PageRouteBuilder(
+                                pageBuilder: (context, _, __) => Scaffold(
+                                  appBar: AppBar(
+                                    title: const Text('Share profile'),
+                                  ),
+                                  body: Column(
+                                    children: [
+                                      Center(
+                                        child: QrImageView(
+                                          data: FirebaseAuth
+                                              .instance.currentUser!.uid,
+                                          version: QrVersions.auto,
+                                          size: 300.0,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 16.0,
+                                      ),
+                                      TextButton(
+                                          onPressed: () async {
+                                            await Clipboard.setData(
+                                                ClipboardData(
+                                                    text: FirebaseAuth.instance
+                                                        .currentUser!.uid));
+                                          },
+                                          child:
+                                              const Text('Copy to clipborad'))
+                                    ],
+                                  ),
+                                ),
+                              ));
+                            },
+                            icon: const Icon(Icons.qr_code)),
+                        const Text('Share')
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value: 'geo_location',
+                    child: Row(
+                      children: [
+                        IconButton(
+                            onPressed: () => Navigator.of(context).push(
+                                PageRouteBuilder(
+                                    pageBuilder: (context, _, __) =>
+                                        const GeolocatorWidget())),
+                            icon: const Icon(Icons.location_on_outlined)),
+                        const Text('Location')
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                      alignment: AlignmentDirectional.center,
+                      value: 'sign_out',
+                      child: Row(
+                        children: [
+                          IconButton(
+                              onPressed: _signOut,
+                              icon: const Icon(Icons.exit_to_app)),
+                          const Text('Sign Out')
+                        ],
+                      )),
+                ],
+                onChanged: (value) => setState(() {}),
+                icon: const Icon(Icons.settings),
+                iconSize: 24.0,
+                alignment: AlignmentDirectional.center,
+                onTap: () {},
+              ),
+            ),
+          ),
+        )
+      ]),
       body: SizedBox(
         width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            const SizedBox(
-              height: 64.0,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                  onTap: _updateProfileImage,
+                  child: ProfileAvatar(
+                    hasAvatar: _isAvatar,
+                    avatarUrl: _avatarURL,
+                  )),
             ),
-            GestureDetector(
-                onTap: _updateProfileImage,
-                child: ProfileAvatar(
-                  hasAvatar: _isAvatar,
-                  avatarUrl: _avatarURL,
-                )),
-            const SizedBox(
-              height: 16.0,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _isEdit
+                    ? Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 64.0),
+                          child: TextField(
+                            controller: _controller,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        _displayName,
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
+                _isEdit
+                    ? IconButton(onPressed: _done, icon: const Icon(Icons.done))
+                    : IconButton(
+                        onPressed: _edit,
+                        icon: const Icon(Icons.edit_rounded),
+                      ),
+              ],
             ),
             TextButton(
                 onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const WebViewContainer())),
                 child: const Text('Web view example')),
-            TextButton(onPressed: _signOut, child: const Text('Sign Out')),
-            const SizedBox(
-              height: 16.0,
-            ),
-            _isEdit
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 64.0),
-                    child: TextField(
-                      controller: _controller,
-                    ),
-                  )
-                : Text(
-                    _displayName,
-                    style: const TextStyle(fontSize: 24.0),
-                  ),
           ],
         ),
       ),

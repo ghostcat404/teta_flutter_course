@@ -6,7 +6,7 @@ import 'package:chat_appl/models/chat_settings.dart';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
-import 'package:chat_appl/services/firebase_database_service.dart';
+import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';

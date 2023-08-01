@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
-import 'package:chat_appl/services/firebase_database_service.dart';
+import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
