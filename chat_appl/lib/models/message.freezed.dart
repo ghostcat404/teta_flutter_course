@@ -20,7 +20,7 @@ Message _$MessageFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Message {
-  String get userId => throw _privateConstructorUsedError;
+  String get userDisplayName => throw _privateConstructorUsedError;
   String get text => throw _privateConstructorUsedError;
   int get timestamp => throw _privateConstructorUsedError;
 
@@ -34,7 +34,7 @@ abstract class $MessageCopyWith<$Res> {
   factory $MessageCopyWith(Message value, $Res Function(Message) then) =
       _$MessageCopyWithImpl<$Res, Message>;
   @useResult
-  $Res call({String userId, String text, int timestamp});
+  $Res call({String userDisplayName, String text, int timestamp});
 }
 
 /// @nodoc
@@ -50,14 +50,14 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? userId = null,
+    Object? userDisplayName = null,
     Object? text = null,
     Object? timestamp = null,
   }) {
     return _then(_value.copyWith(
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
+      userDisplayName: null == userDisplayName
+          ? _value.userDisplayName
+          : userDisplayName // ignore: cast_nullable_to_non_nullable
               as String,
       text: null == text
           ? _value.text
@@ -78,7 +78,7 @@ abstract class _$$_MessageCopyWith<$Res> implements $MessageCopyWith<$Res> {
       __$$_MessageCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String userId, String text, int timestamp});
+  $Res call({String userDisplayName, String text, int timestamp});
 }
 
 /// @nodoc
@@ -91,14 +91,14 @@ class __$$_MessageCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? userId = null,
+    Object? userDisplayName = null,
     Object? text = null,
     Object? timestamp = null,
   }) {
     return _then(_$_Message(
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
+      userDisplayName: null == userDisplayName
+          ? _value.userDisplayName
+          : userDisplayName // ignore: cast_nullable_to_non_nullable
               as String,
       text: null == text
           ? _value.text
@@ -116,13 +116,15 @@ class __$$_MessageCopyWithImpl<$Res>
 @JsonSerializable()
 class _$_Message implements _Message {
   const _$_Message(
-      {required this.userId, required this.text, required this.timestamp});
+      {required this.userDisplayName,
+      required this.text,
+      required this.timestamp});
 
   factory _$_Message.fromJson(Map<String, dynamic> json) =>
       _$$_MessageFromJson(json);
 
   @override
-  final String userId;
+  final String userDisplayName;
   @override
   final String text;
   @override
@@ -130,7 +132,7 @@ class _$_Message implements _Message {
 
   @override
   String toString() {
-    return 'Message(userId: $userId, text: $text, timestamp: $timestamp)';
+    return 'Message(userDisplayName: $userDisplayName, text: $text, timestamp: $timestamp)';
   }
 
   @override
@@ -138,7 +140,8 @@ class _$_Message implements _Message {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_Message &&
-            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.userDisplayName, userDisplayName) ||
+                other.userDisplayName == userDisplayName) &&
             (identical(other.text, text) || other.text == text) &&
             (identical(other.timestamp, timestamp) ||
                 other.timestamp == timestamp));
@@ -146,7 +149,8 @@ class _$_Message implements _Message {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, userId, text, timestamp);
+  int get hashCode =>
+      Object.hash(runtimeType, userDisplayName, text, timestamp);
 
   @JsonKey(ignore: true)
   @override
@@ -164,14 +168,14 @@ class _$_Message implements _Message {
 
 abstract class _Message implements Message {
   const factory _Message(
-      {required final String userId,
+      {required final String userDisplayName,
       required final String text,
       required final int timestamp}) = _$_Message;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$_Message.fromJson;
 
   @override
-  String get userId;
+  String get userDisplayName;
   @override
   String get text;
   @override

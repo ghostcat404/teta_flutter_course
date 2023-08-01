@@ -7,14 +7,14 @@ part of 'message.dart';
 // **************************************************************************
 
 _$_Message _$$_MessageFromJson(Map<String, dynamic> json) => _$_Message(
-      userId: json['userId'] as String,
+      userDisplayName: json['userDisplayName'] as String,
       text: json['text'] as String,
       timestamp: json['timestamp'] as int,
     );
 
 Map<String, dynamic> _$$_MessageToJson(_$_Message instance) =>
     <String, dynamic>{
-      'userId': instance.userId,
+      'userDisplayName': instance.userDisplayName,
       'text': instance.text,
       'timestamp': instance.timestamp,
     };
