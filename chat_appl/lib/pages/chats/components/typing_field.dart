@@ -1,4 +1,4 @@
-import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/services/firebase_database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +20,7 @@ class TypingField extends StatefulWidget {
 
 class _TypingFieldState extends State<TypingField>
     with SingleTickerProviderStateMixin {
-  late DatabaseService dbService;
+  late FirebaseDatabaseService dbService;
   late SharedPreferences prefs;
 
   late final AnimationController _sendButtonAnimationController;
@@ -34,7 +34,7 @@ class _TypingFieldState extends State<TypingField>
   @override
   initState() {
     final GetIt getIt = GetIt.instance;
-    dbService = getIt<DatabaseService>();
+    dbService = getIt<FirebaseDatabaseService>();
     _loadPrefs();
 
     _sendButtonAnimationController = AnimationController(

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:chat_appl/models/db_user.dart';
 import 'package:chat_appl/pages/home_page.dart';
-import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/services/firebase_database_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -23,16 +23,15 @@ void main() async {
     name: "chat_appl",
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final FirebaseDatabase dbInstance = FirebaseDatabase.instanceFor(app: firebaseApp);
+  final FirebaseDatabase dbInstance =
+      FirebaseDatabase.instanceFor(app: firebaseApp);
   // dbInstance.setPersistenceEnabled(true);
 
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-  NotificationSettings notificationSettings = await firebaseMessaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true
-  );
-  if (notificationSettings.authorizationStatus == AuthorizationStatus.authorized) {
+  NotificationSettings notificationSettings = await firebaseMessaging
+      .requestPermission(alert: true, badge: true, sound: true);
+  if (notificationSettings.authorizationStatus ==
+      AuthorizationStatus.authorized) {
     print('User granted permission');
     // TODO: handle the received notifications
   } else {
@@ -54,7 +53,8 @@ void main() async {
 
   // Singleton instances init
   final GetIt getIt = GetIt.instance;
-  getIt.registerSingleton<DatabaseService>(DatabaseService(dbInstance: dbInstance));
+  getIt.registerSingleton<FirebaseDatabaseService>(
+      FirebaseDatabaseService(dbInstance: dbInstance));
   getIt.registerSingleton<FirebaseMessaging>(firebaseMessaging);
   getIt.registerSingleton<NotificationSettings>(notificationSettings);
   getIt.registerSingleton<Isar>(isarDb);
@@ -75,7 +75,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.latoTextTheme(),
       ),
-      initialRoute: FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/home-page',
+      initialRoute:
+          FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/home-page',
       routes: {
         '/sign-in': (context) {
           return SignInScreen(
@@ -90,19 +91,17 @@ class MyApp extends StatelessWidget {
         '/home-page': (context) {
           return const HomePage();
         },
-        '/phone': (context) => PhoneInputScreen(
-          actions: [
-            SMSCodeRequestedAction((context, action, flowKey, phoneNumber) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => SMSCodeInputScreen(
-                    flowKey: flowKey,
+        '/phone': (context) => PhoneInputScreen(actions: [
+              SMSCodeRequestedAction((context, action, flowKey, phoneNumber) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => SMSCodeInputScreen(
+                      flowKey: flowKey,
+                    ),
                   ),
-                ),
-              );
-            }),
-          ]
-        ),
+                );
+              }),
+            ]),
       },
     );
   }

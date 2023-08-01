@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/chats/chat_screen.dart';
-import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/services/firebase_database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +32,9 @@ const List<Widget> mainPageDestinations = <Widget>[
 ];
 
 class HomePage extends StatefulWidget {
-  final int currentPageIndex;
   const HomePage({super.key, this.currentPageIndex = 0});
+
+  final int currentPageIndex;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -41,19 +42,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int currentPageIndex = 0;
-  StreamSubscription? _sub;
-  StreamSubscription? _onMessageStream;
-  StreamSubscription? _onBackgroungMessageStream;
-  User? _user;
 
-  @override
-  void initState() {
-    currentPageIndex = widget.currentPageIndex;
-    _initUser();
-    _handleIncomingLinks();
-    setupInteractedMessage();
-    super.initState();
-  }
+  StreamSubscription? _onBackgroungMessageStream;
+  StreamSubscription? _onMessageStream;
+  StreamSubscription? _sub;
+  User? _user;
 
   @override
   void dispose() {
@@ -63,16 +56,13 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void _handleMessage(RemoteMessage message) async {
-    final Map<String, dynamic> messageData =
-        Map<String, dynamic>.from(message.data);
-    final List<Message?> messageList = await GetIt.instance<DatabaseService>()
-        .getMessageListOnce(messageData['chatId']);
-    Navigator.of(context).push(PageRouteBuilder(
-        pageBuilder: (context, _, __) => ChatPage(
-            messageList: messageList,
-            chatId: messageData['chatId'],
-            user: _user!)));
+  @override
+  void initState() {
+    currentPageIndex = widget.currentPageIndex;
+    _initUser();
+    _handleIncomingLinks();
+    setupInteractedMessage();
+    super.initState();
   }
 
   Future<void> setupInteractedMessage() async {
@@ -88,9 +78,23 @@ class _HomePageState extends State<HomePage> {
     _onMessageStream = FirebaseMessaging.onMessage.listen(_handleMessage);
   }
 
+  void _handleMessage(RemoteMessage message) async {
+    final Map<String, dynamic> messageData =
+        Map<String, dynamic>.from(message.data);
+    final List<Message?> messageList =
+        await GetIt.instance<FirebaseDatabaseService>()
+            .getMessageListOnce(messageData['chatId']);
+    Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (context, _, __) => ChatPage(
+            messageList: messageList,
+            chatId: messageData['chatId'],
+            user: _user!)));
+  }
+
   Future<User> _initUser() async {
     final currFbUser = FirebaseAuth.instance.currentUser;
-    final DatabaseService dbService = GetIt.instance<DatabaseService>();
+    final FirebaseDatabaseService dbService =
+        GetIt.instance<FirebaseDatabaseService>();
     final currUser = await dbService.getUser(currFbUser!.uid);
     final User newUser = User(
       id: FirebaseAuth.instance.currentUser!.uid,
@@ -146,13 +150,14 @@ class _HomePageState extends State<HomePage> {
 }
 
 class MainPage extends StatefulWidget {
-  final int currentPageIndex;
-  final User user;
   const MainPage({
     super.key,
     required this.user,
     this.currentPageIndex = 0,
   });
+
+  final int currentPageIndex;
+  final User user;
 
   @override
   State<MainPage> createState() => _MainPageState();

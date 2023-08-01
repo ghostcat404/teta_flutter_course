@@ -2,14 +2,17 @@ import 'dart:io';
 
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/components/avatar_circle.dart';
+import 'package:chat_appl/pages/home_page.dart';
 import 'package:chat_appl/pages/settings/geo_location_screen.dart';
 import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/services/firebase_database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:isar/isar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart'; // Import for Android features.
 // Import for iOS features.
@@ -24,7 +27,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late DatabaseService dbService;
+  late FirebaseDatabaseService dbService;
 
   String _avatarURL = '';
   final TextEditingController _controller = TextEditingController();
@@ -41,7 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     final GetIt getIt = GetIt.instance;
-    dbService = getIt<DatabaseService>();
+    dbService = getIt<FirebaseDatabaseService>();
     super.initState();
     _loadAvatar();
     _loadName();
@@ -100,16 +103,17 @@ class _SettingsPageState extends State<SettingsPage> {
       displayName = FirebaseAuth.instance.currentUser!.uid;
     }
     dbService.addOrUpdateUserInfo(User(
-        id: currUser!.id,
-        displayName: displayName,
-        photoUrl: currUser.photoUrl,));
+      id: currUser!.id,
+      displayName: displayName,
+      photoUrl: currUser.photoUrl,
+    ));
     return displayName;
   }
 
   void _updateProfileImage() async {
     final User? currUser =
         await dbService.getUser(FirebaseAuth.instance.currentUser!.uid);
-    
+
     final ImagePicker picker = ImagePicker();
     // Pick an image.
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -121,11 +125,16 @@ class _SettingsPageState extends State<SettingsPage> {
     final downloadURL = await ref.getDownloadURL();
 
     dbService.addOrUpdateUserInfo(User(
-        id: currUser!.id,
-        displayName: currUser.displayName,
-        photoUrl: downloadURL,));
+      id: currUser!.id,
+      displayName: currUser.displayName,
+      photoUrl: downloadURL,
+    ));
     _loadAvatar();
   }
+
+  Future<void> clearAllCache() async =>
+      await LocalDatabaseService(isarDbInstance: GetIt.instance<Isar>())
+          .clearAllCache();
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +142,37 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text('Settings'),
         actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(PageRouteBuilder(
+                    pageBuilder: (context, _, __) => FutureBuilder(
+                        future: clearAllCache(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            Navigator.of(context).pop();
+                            return const HomePage(
+                              currentPageIndex: 2,
+                            );
+                          }
+                          return Scaffold(
+                              appBar: AppBar(
+                                title: const Text('Settings'),
+                              ),
+                              body: const Column(
+                                children: [
+                                  Center(
+                                      child: Text(
+                                          'Cache deleting is in progress')),
+                                  Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ],
+                              ));
+                        })));
+                clearAllCache;
+              },
+              icon: const Icon(Icons.cleaning_services)),
           IconButton(
               onPressed: () {
                 Navigator.of(context).push(PageRouteBuilder(

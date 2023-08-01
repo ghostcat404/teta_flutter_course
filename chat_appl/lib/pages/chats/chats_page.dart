@@ -7,7 +7,7 @@ import 'package:chat_appl/models/chat_settings.dart';
 import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/pages/chats/chat_screen.dart';
-import 'package:chat_appl/services/database_service.dart';
+import 'package:chat_appl/services/firebase_database_service.dart';
 import 'package:chat_appl/shimmers/chats_shimmers.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
@@ -26,7 +26,7 @@ class ChatsPage extends StatefulWidget {
 }
 
 class _ChatsPageState extends State<ChatsPage> {
-  late DatabaseService dbService;
+  late FirebaseDatabaseService dbService;
 
   final TextEditingController _searchFieldController = TextEditingController();
 
@@ -39,7 +39,7 @@ class _ChatsPageState extends State<ChatsPage> {
   @override
   void initState() {
     final GetIt getIt = GetIt.instance;
-    dbService = getIt<DatabaseService>();
+    dbService = getIt<FirebaseDatabaseService>();
     super.initState();
   }
 
@@ -71,7 +71,8 @@ class _ChatsPageState extends State<ChatsPage> {
           ChatSettings(chatId: chatId, userAId: userA.id, userBId: userB.id));
     }
     final List<Message?> messageList =
-        await GetIt.instance<DatabaseService>().getMessageListOnce(chatId);
+        await GetIt.instance<FirebaseDatabaseService>()
+            .getMessageListOnce(chatId);
     Navigator.of(context).push(PageRouteBuilder(
         pageBuilder: (context, _, __) =>
             ChatPage(messageList: messageList, chatId: chatId, user: userA)));
