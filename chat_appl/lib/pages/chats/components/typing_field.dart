@@ -1,18 +1,24 @@
+import 'package:chat_appl/models/user.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TypingField extends StatefulWidget {
-  const TypingField(
-      {super.key,
-      required this.controller,
-      required this.chatId,
-      required this.userDisplayName});
+  const TypingField({
+    super.key,
+    required this.controller,
+    required this.chatId,
+    required this.userDisplayName,
+    required this.user,
+    required this.contactId,
+  });
 
-  final TextEditingController controller;
   final String chatId;
+  final TextEditingController controller;
   final String? userDisplayName;
+  final User? user;
+  final String contactId;
 
   @override
   State<TypingField> createState() => _TypingFieldState();
@@ -76,8 +82,12 @@ class _TypingFieldState extends State<TypingField>
             child: IconButton(
               onPressed: () {
                 _sendButtonAnimationController.forward(from: 0);
-                dbService.sendMessage(widget.controller.text,
-                    widget.userDisplayName!, widget.chatId);
+                dbService.sendMessage(
+                    widget.controller.text,
+                    widget.userDisplayName!,
+                    widget.chatId,
+                    widget.user!,
+                    widget.contactId);
                 widget.controller.text = '';
               },
               icon: const Icon(Icons.send),

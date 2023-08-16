@@ -1,46 +1,91 @@
+// TODO: refactoring
+import 'dart:async';
 import 'dart:math';
 
-import 'package:chat_appl/models/chat_info.dart';
+import 'package:chat_appl/components/default_widgets.dart';
 import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/chats/chat_creation_page.dart';
+import 'package:chat_appl/models/user_chat.dart';
+import 'package:chat_appl/components/user_selection_page.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
-import 'package:chat_appl/shimmers/chats_shimmers.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:chat_appl/services/repository/database_repository.dart';
+import 'package:chat_appl/utils/utils.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+class ChatUIWidget extends StatelessWidget {
+  const ChatUIWidget({super.key, required this.userChat});
+
+  final UserChat userChat;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      // TODO: add contact image
+      title: Text(userChat.chatName),
+      trailing: Text(userChat.lastMessageTimestamp == null
+          ? ''
+          : timeago
+              .format(DateTime.fromMillisecondsSinceEpoch(
+                  userChat.lastMessageTimestamp!))
+              .toString()),
+      subtitle: Text(userChat.lastMessage == ''
+          ? ''
+          : '${userChat.lastMessage.substring(0, min(userChat.lastMessage.length, 16))}...'),
+    );
+  }
+}
+
 class ChatsPage extends StatefulWidget {
-  const ChatsPage({super.key, required this.user});
+  const ChatsPage(
+      {super.key,
+      required this.user,
+      required this.dbRepository,
+      required this.dbService});
 
   final User? user;
+  final DatabaseRepository dbRepository;
+  final FirebaseDatabaseService dbService;
 
   @override
   State<ChatsPage> createState() => _ChatsPageState();
 }
 
 class _ChatsPageState extends State<ChatsPage> {
-  late FirebaseDatabaseService dbService;
+  StreamSubscription? _connectivitySubscription;
+
+  void handleConnectionIsAvailable(ConnectivityResult connectivityResult) {
+    setState(() {});
+  }
 
   @override
   void initState() {
-    final GetIt getIt = GetIt.instance;
-    dbService = getIt<FirebaseDatabaseService>();
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen(handleConnectionIsAvailable);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
   }
 
   void selectUserToCreateAChat() {
     Navigator.of(context).push(PageRouteBuilder(
         pageBuilder: (context, _, __) => StreamBuilder(
-            stream: dbService.contactsStream,
+            stream: widget.dbService.getUsersStream,
             builder: (context, snapshot) {
               final bool dataIsLoaded =
                   snapshot.hasData && snapshot.data != null;
-              return ChatCreationPage(
+              return SelectionPage(
+                appBarTitle: 'Create Chat',
                 dataIsLoaded: dataIsLoaded,
-                dbService: dbService,
+                dbService: widget.dbService,
                 snapshot: snapshot,
+                function: createChatWithUser,
               );
             })));
   }
@@ -53,88 +98,67 @@ class _ChatsPageState extends State<ChatsPage> {
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
-              iconSize: 25.0,
               onPressed: selectUserToCreateAChat,
-            )
+            ),
           ],
         ),
-        body: StreamBuilder(
-          builder: (context, chatInfoSnapshot) {
-            if (chatInfoSnapshot.hasData &&
-                chatInfoSnapshot.data != null &&
-                chatInfoSnapshot.data!.isNotEmpty) {
-              return ListView.separated(
-                separatorBuilder: (BuildContext context, int index) =>
-                    const Divider(),
-                itemCount: chatInfoSnapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final ChatInfo? chatInfo = chatInfoSnapshot.data![index];
-                  return ListTile(
-                    title: Text(chatInfo!.chatName),
-                    trailing: Text(chatInfo.lastMessageTimestamp == null
-                        ? ''
-                        : timeago
-                            .format(DateTime.fromMillisecondsSinceEpoch(
-                                chatInfo.lastMessageTimestamp!))
-                            .toString()),
-                    subtitle: Text(chatInfo.lastMessage == ''
-                        ? ''
-                        : '${chatInfo.lastMessage.substring(0, min(chatInfo.lastMessage.length, 16))}...'),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder: (context, _, __) => StreamBuilder(
-                            builder: (context, messageSnapshot) {
-                              bool dataIsLoaded = (messageSnapshot.hasData &&
-                                  messageSnapshot.data != null);
-                              return AnimatedSwitcher(
-                                duration: const Duration(seconds: 1),
-                                child: dataIsLoaded
-                                    ? ChatPage(
-                                        messageList: messageSnapshot.data!,
-                                        chatId: chatInfo.chatId,
-                                        user: widget.user,
-                                      )
-                                    : const ListMessagesShimmer(),
-                              );
-                            },
-                            stream: dbService.getMessageStream(chatInfo.chatId),
-                          ),
-                          transitionsBuilder: (context, animation, _, child) {
-                            const begin = Offset(0.0, 1.0);
-                            const end = Offset.zero;
-                            const curve = Curves.ease;
+        body: FutureBuilder(
+            future: checkConnection(),
+            builder: (context, connectionSnapshot) {
+              if (connectionSnapshot.connectionState == ConnectionState.done &&
+                  connectionSnapshot.hasData) {
+                return StreamBuilder(
+                    stream: widget.dbRepository.getUserChatsStream(
+                        widget.user!.id, connectionSnapshot.data!),
+                    builder: (context, userChatsSnapshot) {
+                      if (userChatsSnapshot.hasData &&
+                          userChatsSnapshot.data != null &&
+                          userChatsSnapshot.data!.isNotEmpty) {
+                        final List<UserChat?> userChats =
+                            userChatsSnapshot.data!;
+                        return ListView.separated(
+                          separatorBuilder: (BuildContext context, int index) =>
+                              const Divider(),
+                          itemCount: userChats.length,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, _, __) =>
+                                          ChatStream(
+                                        userChat: userChats[index]!,
+                                        user: widget.user!,
+                                        dbService: widget.dbService,
+                                      ),
+                                      transitionsBuilder:
+                                          (context, animation, _, child) {
+                                        const begin = Offset(0.0, 1.0);
+                                        const end = Offset.zero;
+                                        const curve = Curves.ease;
 
-                            var tween = Tween(begin: begin, end: end)
-                                .chain(CurveTween(curve: curve));
+                                        var tween = Tween(
+                                                begin: begin, end: end)
+                                            .chain(CurveTween(curve: curve));
 
-                            return SlideTransition(
-                              position: animation.drive(tween),
-                              child: child,
-                            );
+                                        return SlideTransition(
+                                          position: animation.drive(tween),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: ChatUIWidget(
+                                  userChat: userChats[index]!,
+                                ));
                           },
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            } else {
-              return const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('There is no chats yet'),
-                    ],
-                  ),
-                ],
-              );
-            }
-          },
-          stream: dbService
-              .getChatInfoStream(FirebaseAuth.instance.currentUser!.uid),
-        ));
+                        );
+                      }
+                      return const NoDataWidget('There is no chats yet');
+                    });
+              }
+              return const DefaultProgressIndicator();
+            }));
   }
 }

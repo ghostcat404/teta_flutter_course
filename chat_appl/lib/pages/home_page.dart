@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:chat_appl/models/message.dart';
 import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/models/user_chat.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
+import 'package:chat_appl/services/repository/database_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:chat_appl/pages/chats/chats_page.dart';
 import 'package:chat_appl/pages/contacts/contacts_page.dart';
-import 'package:chat_appl/pages/settings/settings_page.dart';
+import 'package:chat_appl/pages/profile/profile_page.dart';
 
 const List<Widget> mainPageDestinations = <Widget>[
   NavigationDestination(
@@ -25,14 +26,16 @@ const List<Widget> mainPageDestinations = <Widget>[
     label: 'Chats',
   ),
   NavigationDestination(
-    selectedIcon: Icon(Icons.settings),
-    icon: Icon(Icons.settings),
-    label: 'Settings',
+    icon: Icon(Icons.account_circle),
+    label: 'Profile',
   ),
 ];
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.currentPageIndex = 0});
+  const HomePage({
+    super.key,
+    this.currentPageIndex = 0,
+  });
 
   final int currentPageIndex;
 
@@ -81,17 +84,19 @@ class _HomePageState extends State<HomePage> {
   void _handleMessage(RemoteMessage message) async {
     final Map<String, dynamic> messageData =
         Map<String, dynamic>.from(message.data);
-    final List<Message?> messageList =
-        await GetIt.instance<FirebaseDatabaseService>()
-            .getMessageListOnce(messageData['chatId']);
+    final UserChat? userChat = await GetIt.instance<FirebaseDatabaseService>()
+        .getUserChatById(_user!.id, messageData['chatId']);
     Navigator.of(context).push(PageRouteBuilder(
-        pageBuilder: (context, _, __) => ChatPage(
-            messageList: messageList,
-            chatId: messageData['chatId'],
-            user: _user!)));
+        pageBuilder: (context, _, __) => ChatStream(
+              userChat: userChat!,
+              user: _user!,
+              dbService: GetIt.instance<FirebaseDatabaseService>(),
+            )));
   }
 
   Future<User> _initUser() async {
+    // BUG: add user saving!!!
+    // final SharedPreferences sh = await SharedPreferences.getInstance();
     final currFbUser = FirebaseAuth.instance.currentUser;
     final FirebaseDatabaseService dbService =
         GetIt.instance<FirebaseDatabaseService>();
@@ -101,7 +106,10 @@ class _HomePageState extends State<HomePage> {
       displayName: FirebaseAuth.instance.currentUser!.uid.substring(0, 8),
       photoUrl: '',
     );
-    if (currUser == null) dbService.addOrUpdateUserInfo(newUser);
+    if (currUser == null) {
+      dbService.addOrUpdateUserInfo(newUser);
+      // dbService.createOrUpdateUserContact(newUser.id, newUser.id);
+    }
     _user = currUser ?? newUser;
     return _user!;
   }
@@ -124,6 +132,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // BUG: doesn't work wothout internet!!!
+    // need to initialize user without internet connection!!!
     return _user == null
         ? FutureBuilder(
             future: _initUser(),
@@ -176,11 +186,20 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: <Widget>[
-        ContactsPage(user: widget.user),
+        ContactsPage(
+          user: widget.user,
+          dbService: GetIt.instance<FirebaseDatabaseService>(),
+          dbRepository: GetIt.instance<DatabaseRepository>(),
+        ),
         ChatsPage(
           user: widget.user,
+          dbService: GetIt.instance<FirebaseDatabaseService>(),
+          dbRepository: GetIt.instance<DatabaseRepository>(),
         ),
-        SettingsPage(user: widget.user),
+        ProfilePage(
+          user: widget.user,
+          dbService: GetIt.instance<FirebaseDatabaseService>(),
+        ),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(
           onDestinationSelected: (int index) {

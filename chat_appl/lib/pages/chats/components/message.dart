@@ -5,10 +5,10 @@ import 'package:string_to_hex/string_to_hex.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class MessageWidget extends StatefulWidget {
+  const MessageWidget({super.key, required this.message, required this.user});
+
   final Message message;
   final User? user;
-
-  const MessageWidget({super.key, required this.message, required this.user});
 
   @override
   State<MessageWidget> createState() => _MessageWidgetState();
@@ -18,14 +18,15 @@ class _MessageWidgetState extends State<MessageWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: widget.message.userDisplayName == widget.user!.displayName
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start,
+            mainAxisAlignment:
+                widget.message.userDisplayName == widget.user!.displayName
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
             children: [
               Text(
                 widget.message.userDisplayName,
@@ -51,13 +52,14 @@ class _MessageWidgetState extends State<MessageWidget> {
           const SizedBox(height: 8),
           // TODO: fix long messages
           Row(
-            mainAxisAlignment: widget.message.userDisplayName == widget.user!.displayName
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start,
+            mainAxisAlignment:
+                widget.message.userDisplayName == widget.user!.displayName
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.indigoAccent.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(64.0),
                 ),
                 child: Padding(
@@ -65,7 +67,7 @@ class _MessageWidgetState extends State<MessageWidget> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
+                      SelectableText(
                         widget.message.text,
                         style: const TextStyle(fontSize: 16.0),
                       ),

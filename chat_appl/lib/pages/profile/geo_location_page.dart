@@ -31,10 +31,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   static const String _kPermissionGrantedMessage = 'Permission granted.';
 
   LatLng _currPosition = const LatLng(58, 50);
-
-  late final MapController _mapController;
-
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+  late final MapController _mapController;
   final List<_PositionItem> _positionItems = <_PositionItem>[];
   StreamSubscription<Position>? _positionStreamSubscription;
   StreamSubscription<ServiceStatus>? _serviceStatusStreamSubscription;
@@ -200,38 +198,42 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Map'),),
+      appBar: AppBar(
+        title: const Text('Map'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Flexible(
               child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  center: _currPosition,
-                  zoom: 10,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+                  mapController: _mapController,
+                  options: MapOptions(
+                    center: _currPosition,
+                    zoom: 10,
                   ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _currPosition,
-                        builder: (context) => const FlutterLogo(
-                          textColor: Colors.blue,
-                          key: ObjectKey(Colors.blue),
-                        ),
-                      )
-                    ],
-                  )
-                ]
-              ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: _currPosition,
+                          builder: (context) => const FlutterLogo(
+                            textColor: Colors.blue,
+                            key: ObjectKey(Colors.blue),
+                          ),
+                        )
+                      ],
+                    )
+                  ]),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height / 8,)
+            SizedBox(
+              height: MediaQuery.of(context).size.height / 8,
+            )
           ],
         ),
       ),

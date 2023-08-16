@@ -7,11 +7,12 @@ part 'chat_info.g.dart';
 class ChatInfo with _$ChatInfo {
   const factory ChatInfo({
     required String chatId,
-    required String userBId,
     required String chatName,
+    required String chatPhotoUrl,
     required String lastMessage,
     required int? lastMessageTimestamp,
   }) = _ChatInfo;
 
-  factory ChatInfo.fromJson(Map<String, dynamic> json) => _$ChatInfoFromJson(json);
+  factory ChatInfo.fromJson(Map<String, dynamic> json) =>
+      _$ChatInfoFromJson(json);
 }
