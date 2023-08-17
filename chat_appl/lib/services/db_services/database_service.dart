@@ -1,20 +1,35 @@
-import 'package:chat_appl/models/db_user.dart';
-import 'package:chat_appl/models/db_user_chat.dart';
-import 'package:chat_appl/models/db_user_contact.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
-import 'package:chat_appl/models/user_contact.dart';
+import 'dart:core';
+
+import 'package:chat_appl/models/db_models/db_message.dart';
+import 'package:chat_appl/models/db_models/db_user.dart';
+import 'package:chat_appl/models/db_models/db_user_chat.dart';
+import 'package:chat_appl/models/db_models/db_user_contact.dart';
+import 'package:chat_appl/models/db_models/db_user_profile.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user_contact.dart';
+import 'package:chat_appl/models/fb_models/user_profile.dart';
 import 'package:chat_appl/services/mappers/model_convertation_mappers.dart';
 import 'package:chat_appl/utils/utils.dart';
 import 'package:isar/isar.dart';
 
 class LocalDatabaseService {
-  LocalDatabaseService({required this.isarDbInstance});
+  LocalDatabaseService(this.isarDbInstance);
 
   final Isar isarDbInstance;
 
   Future clearAllCache() async =>
       await isarDbInstance.writeTxn(() async => await isarDbInstance.clear());
+
+  Future<UserProfile?> getUserProfile(String userId) async {
+    final DbUserProfile? dbUserProfile =
+        await isarDbInstance.collection<DbUserProfile>().get(fastHash(userId));
+    if (dbUserProfile != null) {
+      return toUserProfileFromDbUserProfile(dbUserProfile);
+    }
+    return null;
+  }
 
   Future<List<DbUser?>> getAllUsers() async {
     final List<DbUser?> users = await isarDbInstance.txn(() async =>
@@ -91,7 +106,10 @@ class LocalDatabaseService {
         .put(toDbUserChatFromUserChat(userChat)));
   }
 
-  Future writeDbUser(DbUser dbUser) async {
-    await isarDbInstance.collection<DbUser>().put(dbUser);
+  // TODO: move logic in DatabaseRepository
+  Future cacheMessage(Message message) async {
+    await isarDbInstance.writeTxn(() async => await isarDbInstance
+        .collection<DbMessage>()
+        .put(toDbMessageFromMessage(message)));
   }
 }

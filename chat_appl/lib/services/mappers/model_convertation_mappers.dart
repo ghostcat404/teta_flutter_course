@@ -1,11 +1,29 @@
-import 'package:chat_appl/models/db_message.dart';
-import 'package:chat_appl/models/db_user.dart';
-import 'package:chat_appl/models/db_user_chat.dart';
-import 'package:chat_appl/models/db_user_contact.dart';
-import 'package:chat_appl/models/message.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
-import 'package:chat_appl/models/user_contact.dart';
+import 'package:chat_appl/models/db_models/db_message.dart';
+import 'package:chat_appl/models/db_models/db_user.dart';
+import 'package:chat_appl/models/db_models/db_user_chat.dart';
+import 'package:chat_appl/models/db_models/db_user_contact.dart';
+import 'package:chat_appl/models/db_models/db_user_profile.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user_contact.dart';
+import 'package:chat_appl/models/fb_models/user_profile.dart';
+
+UserProfile toUserProfileFromDbUserProfile(DbUserProfile dbUserProfile) {
+  return UserProfile(
+      userId: dbUserProfile.userId,
+      displayName: dbUserProfile.displayName,
+      photoUrl: dbUserProfile.photoUrl,
+      isNameEditing: dbUserProfile.isNameEditing);
+}
+
+DbUserProfile toDbUserProfileFromUserProfile(UserProfile userProfile) {
+  return DbUserProfile(
+      userId: userProfile.userId,
+      displayName: userProfile.displayName,
+      photoUrl: userProfile.photoUrl,
+      isNameEditing: userProfile.isNameEditing);
+}
 
 User toUserFromDbUser(DbUser dbUser) {
   return User(

@@ -1,7 +1,10 @@
-import 'package:chat_appl/models/message.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
-import 'package:chat_appl/models/user_contact.dart';
+import 'dart:core';
+
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user_contact.dart';
+import 'package:chat_appl/models/fb_models/user_profile.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:chat_appl/services/db_services/services_utils.dart';
 
@@ -10,9 +13,24 @@ import 'package:chat_appl/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 
 class FirebaseDatabaseService {
-  FirebaseDatabaseService({required this.dbInstance});
+  FirebaseDatabaseService(this.dbInstance);
 
   final FirebaseDatabase dbInstance;
+
+  Future<UserProfile?> getUserProfile(String userId) async {
+    final DataSnapshot profileSnapshot =
+        await dbInstance.ref('userProfiles/$userId').get();
+    if (profileSnapshot.value != null) {
+      return UserProfile.fromJson(
+          Map<String, dynamic>.from(profileSnapshot.value! as Map));
+    }
+    return null;
+  }
+
+  Future addOrUpdateUserProfile(String userId, UserProfile userProfile) async {
+    final DatabaseReference ref = dbInstance.ref('userProfiles/$userId');
+    await ref.set(userProfile.toJson());
+  }
 
   Future addOrUpdateUserInfo(User user) async {
     DatabaseReference ref = dbInstance.ref("users/${user.id}");
@@ -146,18 +164,40 @@ class FirebaseDatabaseService {
     await addOrUpdateUserChat(contact.id, contactChat);
   }
 
-  Future<List<String?>> getUserChats(String userId) async {
-    DataSnapshot chatIdsSnapshot =
+  // TODO: refactoring
+  Future<List<UserChat?>> getUserChats(String userId) async {
+    DataSnapshot userChatsSnapshot =
         await dbInstance.ref('userChats/$userId').get();
-    List<String?> userChatIds = [];
-    if (chatIdsSnapshot.value != null) {
+    List<UserChat?> userChats = [];
+    if (userChatsSnapshot.value != null) {
       final Map<dynamic, dynamic> chats =
-          Map<dynamic, dynamic>.from(chatIdsSnapshot.value! as Map);
+          Map<dynamic, dynamic>.from(userChatsSnapshot.value! as Map);
       chats.forEach((key, value) {
-        userChatIds.add(value);
+        final UserChat? userChat = createInstanceOf(
+            Map<String, dynamic>.from(value),
+            instanceKey: 'userChats');
+        userChats.add(userChat);
       });
     }
-    return userChatIds;
+    return userChats;
+  }
+
+  // TODO: refactoring
+  Future<List<UserContact?>> getUserContacts(String userId) async {
+    DataSnapshot userContactsSnapshot =
+        await dbInstance.ref('userContacts/$userId').get();
+    List<UserContact?> userContacts = [];
+    if (userContactsSnapshot.value != null) {
+      final Map<dynamic, dynamic> contacts =
+          Map<dynamic, dynamic>.from(userContactsSnapshot.value! as Map);
+      contacts.forEach((key, value) {
+        final UserContact? userContact = createInstanceOf(
+            Map<String, dynamic>.from(value),
+            instanceKey: 'userChats');
+        userContacts.add(userContact);
+      });
+    }
+    return userContacts;
   }
 
   Future createOrUpdateUserContact(String userId, UserContact contact,
@@ -196,6 +236,7 @@ class FirebaseDatabaseService {
         final firebaseMessages = Map<dynamic, dynamic>.from(
             event.snapshot.value as Map<dynamic, dynamic>);
         firebaseMessages.forEach((key, value) {
+          // Move logic to Repository (different Repositories?)
           final currentData = Map<String, dynamic>.from(value);
           final T? instance =
               createInstanceOf(currentData, instanceKey: instanceKey);

@@ -1,8 +1,8 @@
-import 'package:chat_appl/models/chat_info.dart';
-import 'package:chat_appl/models/message.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
-import 'package:chat_appl/models/user_contact.dart';
+import 'package:chat_appl/models/fb_models/chat_info.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user_contact.dart';
 import 'package:chat_appl/services/db_services/database_service.dart';
 import 'package:chat_appl/services/mappers/model_convertation_mappers.dart';
 import 'package:get_it/get_it.dart';
@@ -52,6 +52,8 @@ void cacheInstance<T>(T? instance, {String? cacheKey}) {
         await localDbInstance.cacheUserContact(instance),
     'userChats': (dynamic instance) async =>
         await localDbInstance.cacheUserChat(instance),
+    'chatsMessages': (dynamic instance) async =>
+        await localDbInstance.cacheMessage(instance),
     'null': (dynamic instance) async {}
   };
   cacheKey ??= 'null';

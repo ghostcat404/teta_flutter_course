@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:chat_appl/services/repository/database_repository.dart';
@@ -196,10 +196,7 @@ class _MainPageState extends State<MainPage> {
           dbService: GetIt.instance<FirebaseDatabaseService>(),
           dbRepository: GetIt.instance<DatabaseRepository>(),
         ),
-        ProfilePage(
-          user: widget.user,
-          dbService: GetIt.instance<FirebaseDatabaseService>(),
-        ),
+        const ProfilePage(),
       ][currentPageIndex],
       bottomNavigationBar: NavigationBar(
           onDestinationSelected: (int index) {

@@ -1,6 +1,6 @@
 import 'package:chat_appl/components/default_widgets.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
 import 'package:chat_appl/pages/chats/chat_details.dart';
 import 'package:chat_appl/pages/chats/components/message.dart';
 import 'package:chat_appl/pages/chats/components/typing_field.dart';

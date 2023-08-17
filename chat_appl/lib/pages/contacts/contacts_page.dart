@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:chat_appl/components/avatar_circle.dart';
 import 'package:chat_appl/components/default_widgets.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_contact.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_contact.dart';
 import 'package:chat_appl/components/user_selection_page.dart';
 import 'package:chat_appl/pages/contacts/contact_widgets.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';

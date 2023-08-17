@@ -1,4 +1,4 @@
-import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -65,6 +65,8 @@ class _TypingFieldState extends State<TypingField>
       child: BottomAppBar(
           child: Row(
         children: [
+          IconButton(
+              onPressed: () {}, icon: const Icon(Icons.add_box_outlined)),
           Expanded(
             child: TextField(
                 controller: widget.controller,

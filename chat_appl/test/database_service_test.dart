@@ -1,4 +1,4 @@
-import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
@@ -24,7 +24,7 @@ void main() {
 
   setUp(() {
     firebaseDatabase = MockFirebaseDatabase.instance;
-    databaseService = FirebaseDatabaseService(dbInstance: firebaseDatabase);
+    databaseService = FirebaseDatabaseService(firebaseDatabase);
   });
 
   test('Get user name from fake database', () async {

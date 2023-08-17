@@ -1,8 +1,3 @@
-import 'package:chat_appl/models/message.dart';
-import 'package:chat_appl/components/avatar_circle.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/chats/chat_page.dart';
-import 'package:chat_appl/shimmers/chats_shimmers.dart';
 import 'package:flutter/material.dart';
 import 'package:storybook_flutter/storybook_flutter.dart';
 

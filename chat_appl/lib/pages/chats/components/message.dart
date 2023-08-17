@@ -1,5 +1,5 @@
-import 'package:chat_appl/models/message.dart';
-import 'package:chat_appl/models/user.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:string_to_hex/string_to_hex.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -18,7 +18,7 @@ class _MessageWidgetState extends State<MessageWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(8, 0, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

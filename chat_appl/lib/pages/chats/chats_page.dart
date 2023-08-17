@@ -3,8 +3,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chat_appl/components/default_widgets.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
 import 'package:chat_appl/components/user_selection_page.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
