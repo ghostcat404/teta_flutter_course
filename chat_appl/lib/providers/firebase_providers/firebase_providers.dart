@@ -1,5 +1,5 @@
 import 'package:chat_appl/services/db_services/firebase_database_service.dart';
-import 'package:chat_appl/services/db_services/firebase_storage_service.dart';
+import 'package:chat_appl/services/fb_store_services/firebase_storage_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -16,8 +16,8 @@ FirebaseAuth firebaseAuth(FirebaseAuthRef ref) {
 
 @riverpod
 String? authStateChanges(AuthStateChangesRef ref) {
-  return ref
-      .watch(firebaseAuthProvider.select((value) => value.currentUser?.uid));
+  // TODO: add check for authentification everywhere!!!
+  return ref.watch(firebaseAuthProvider).currentUser?.uid;
 }
 
 @riverpod
@@ -33,12 +33,10 @@ FirebaseStorage firebaseStorage(FirebaseStorageRef ref) {
 
 @riverpod
 FirebaseDatabaseService? firebaseDbService(FirebaseDbServiceRef ref) {
-  final String? userId =
-      ref.watch(authStateChangesProvider.select((value) => value));
+  final String? userId = ref.watch(authStateChangesProvider);
   if (userId != null) {
     final FirebaseDatabase dbInstance = ref.watch(
-        firebaseDatabaseProvider(firebaseApp: GetIt.instance<FirebaseApp>())
-            .select((firebaseDatabase) => firebaseDatabase));
+        firebaseDatabaseProvider(firebaseApp: GetIt.instance<FirebaseApp>()));
     return FirebaseDatabaseService(dbInstance);
   }
   return null;
@@ -46,8 +44,7 @@ FirebaseDatabaseService? firebaseDbService(FirebaseDbServiceRef ref) {
 
 @riverpod
 FirebaseStorageService? firebaseStorageService(FirebaseStorageServiceRef ref) {
-  final String? userId =
-      ref.watch(authStateChangesProvider.select((value) => value));
+  final String? userId = ref.watch(authStateChangesProvider);
   if (userId != null) {
     final FirebaseStorage storageInstance = ref.watch(firebaseStorageProvider);
     return FirebaseStorageService(storageInstance);

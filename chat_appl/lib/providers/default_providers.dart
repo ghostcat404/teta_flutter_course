@@ -1,18 +1,13 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 part 'default_providers.g.dart';
 
 @riverpod
-class ConnectionState extends _$ConnectionState {
-  Future<bool> _checkConnection() async {
-    final ConnectivityResult connectivityResult =
-        await Connectivity().checkConnectivity();
-    return connectivityResult == ConnectivityResult.none ? false : true;
+class TextController extends _$TextController {
+  @override
+  TextEditingController build({String? text}) {
+    return TextEditingController(text: text);
   }
 
-  @override
-  Future<bool> build() async {
-    return await _checkConnection();
-  }
+  void clear() => state.clear();
 }

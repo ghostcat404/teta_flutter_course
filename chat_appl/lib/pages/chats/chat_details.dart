@@ -1,23 +1,19 @@
 import 'package:chat_appl/components/default_widgets.dart';
-import 'package:chat_appl/models/fb_models/user.dart';
 import 'package:chat_appl/models/fb_models/user_chat.dart';
 import 'package:chat_appl/pages/home_page.dart';
-import 'package:chat_appl/services/db_services/firebase_database_service.dart';
+import 'package:chat_appl/providers/firebase_providers/firebase_providers.dart';
+import 'package:chat_appl/providers/repository_providers/repository_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatDetailsScreen extends StatelessWidget {
-  const ChatDetailsScreen(
-      {super.key,
-      required this.dbService,
-      required this.userChat,
-      required this.currUser});
+class ChatDetailsScreen extends ConsumerWidget {
+  const ChatDetailsScreen({super.key, required this.userChat});
 
   final UserChat userChat;
-  final User currUser;
-  final FirebaseDatabaseService dbService;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String? currUserId = ref.watch(authStateChangesProvider);
     return Scaffold(
         appBar: AppBar(
           title: const Text('Chat Details'),
@@ -27,17 +23,37 @@ class ChatDetailsScreen extends StatelessWidget {
             name: userChat.chatName,
             photoUrl: userChat.chatPhotoUrl,
           ),
-          FloatingActionButton.large(
-              onPressed: () async {
-                await deleteChat(currUser.id, userChat, dbService);
-                Navigator.of(context).pushAndRemoveUntil(
-                    PageRouteBuilder(
-                        pageBuilder: (context, _, __) => const HomePage(
-                              currentPageIndex: 1,
-                            )),
-                    (r) => false);
-              },
-              child: const Icon(Icons.delete_forever))
+          Padding(
+              padding: const EdgeInsets.all(24.0),
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                CustomButtonWidget(
+                  icon: const Icon(Icons.delete_forever),
+                  buttonName: 'Delete Chat',
+                  onTapFunction: () async {
+                    ref
+                        .read(dbRepositoryProvider)
+                        .deleteChat(currUserId!, userChat);
+                    Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (context) => const HomePage()),
+                        (r) => false);
+                  },
+                ),
+                const SizedBox(
+                  width: 64.0,
+                ),
+                CustomButtonWidget(
+                  icon: const Icon(Icons.delete_forever),
+                  buttonName: 'Clear Chat',
+                  onTapFunction: () async {
+                    ref
+                        .read(dbRepositoryProvider)
+                        .clearChat(currUserId!, userChat);
+                    Navigator.of(context).pop();
+                  },
+                )
+              ]))
         ]));
   }
 }

@@ -1,98 +1,60 @@
 import 'package:chat_appl/models/db_models/db_message.dart';
-import 'package:chat_appl/models/db_models/db_user.dart';
 import 'package:chat_appl/models/db_models/db_user_chat.dart';
-import 'package:chat_appl/models/db_models/db_user_contact.dart';
 import 'package:chat_appl/models/db_models/db_user_profile.dart';
+import 'package:chat_appl/models/db_models/db_user_settings.dart';
 import 'package:chat_appl/models/fb_models/message.dart';
-import 'package:chat_appl/models/fb_models/user.dart';
 import 'package:chat_appl/models/fb_models/user_chat.dart';
-import 'package:chat_appl/models/fb_models/user_contact.dart';
 import 'package:chat_appl/models/fb_models/user_profile.dart';
+import 'package:chat_appl/models/fb_models/user_settings.dart';
 
-UserProfile toUserProfileFromDbUserProfile(DbUserProfile dbUserProfile) {
-  return UserProfile(
-      userId: dbUserProfile.userId,
-      displayName: dbUserProfile.displayName,
-      photoUrl: dbUserProfile.photoUrl,
-      isNameEditing: dbUserProfile.isNameEditing);
-}
+T? convertModelGetter<E, T>(E model) {
+  final factories = <Type, T Function(E)>{
+    UserSettings: (dynamic model) => DbUserSettings(
+        userId: model.userId,
+        displayName: model.displayName,
+        photoUrl: model.photoUrl) as T,
+    DbUserSettings: (dynamic model) => UserSettings(
+        userId: model.userId,
+        displayName: model.displayName,
+        photoUrl: model.photoUrl) as T,
+    UserProfile: (dynamic model) => DbUserProfile(
+          userId: model.userId,
+          displayName: model.displayName,
+          photoUrl: model.photoUrl,
+        ) as T,
+    DbUserProfile: (dynamic model) => UserProfile(
+          userId: model.userId,
+          displayName: model.displayName,
+          photoUrl: model.photoUrl,
+        ) as T,
+    Message: (dynamic model) => DbMessage(
+        messageId: model.messageId,
+        text: model.text,
+        timestamp: model.timestamp,
+        userDisplayName: model.userDisplayName,
+        senderId: model.senderId) as T,
+    DbMessage: (dynamic model) => Message(
+        messageId: model.messageId,
+        text: model.text,
+        timestamp: model.timestamp,
+        userDisplayName: model.userDisplayName,
+        senderId: model.senderId) as T,
+    UserChat: (dynamic model) => DbUserChat(
+        chatId: model.chatId,
+        chatName: model.chatName,
+        chatPhotoUrl: model.chatPhotoUrl,
+        lastMessage: model.lastMessage,
+        contactId: model.contactId,
+        lastMessageTimestamp: model.lastMessageTimestamp) as T,
+    DbUserChat: (dynamic model) => UserChat(
+        chatId: model.chatId,
+        chatName: model.chatName,
+        chatPhotoUrl: model.chatPhotoUrl,
+        lastMessage: model.lastMessage,
+        contactId: model.contactId,
+        lastMessageTimestamp: model.lastMessageTimestamp) as T,
+  };
 
-DbUserProfile toDbUserProfileFromUserProfile(UserProfile userProfile) {
-  return DbUserProfile(
-      userId: userProfile.userId,
-      displayName: userProfile.displayName,
-      photoUrl: userProfile.photoUrl,
-      isNameEditing: userProfile.isNameEditing);
-}
-
-User toUserFromDbUser(DbUser dbUser) {
-  return User(
-    id: dbUser.userId,
-    displayName: dbUser.displayName,
-    photoUrl: dbUser.photoUrl,
-  );
-}
-
-DbUser toDbUserFromUser(User user) {
-  return DbUser(
-      userId: user.id, displayName: user.displayName, photoUrl: user.photoUrl);
-}
-
-DbMessage toDbMessageFromMessage(Message message) {
-  return DbMessage(
-      messageId: message.messageId,
-      text: message.text,
-      timestamp: message.timestamp,
-      userDisplayName: message.userDisplayName,
-      senderId: message.senderId);
-}
-
-Message toMessageFromDbMessage(DbMessage dbMessage) {
-  return Message(
-      messageId: dbMessage.messageId,
-      text: dbMessage.text,
-      timestamp: dbMessage.timestamp,
-      userDisplayName: dbMessage.userDisplayName,
-      senderId: dbMessage.senderId);
-}
-
-UserContact toUserContactFromDbUserContact(DbUserContact dbUserContact) {
-  return UserContact(
-      contactId: dbUserContact.contactId,
-      displayName: dbUserContact.displayName,
-      photoUrl: dbUserContact.photoUrl);
-}
-
-DbUserContact toDbUserContactFromUserContact(UserContact userContact) {
-  return DbUserContact(
-      contactId: userContact.contactId,
-      displayName: userContact.displayName,
-      photoUrl: userContact.photoUrl);
-}
-
-UserChat toUserChatFromDbUserChat(DbUserChat dbUserChat) {
-  return UserChat(
-      chatId: dbUserChat.chatId,
-      chatName: dbUserChat.chatName,
-      chatPhotoUrl: dbUserChat.chatPhotoUrl,
-      lastMessage: dbUserChat.lastMessage,
-      contactId: dbUserChat.contactId,
-      lastMessageTimestamp: dbUserChat.lastMessageTimestamp);
-}
-
-DbUserChat toDbUserChatFromUserChat(UserChat userChat) {
-  return DbUserChat(
-      chatId: userChat.chatId,
-      chatName: userChat.chatName,
-      chatPhotoUrl: userChat.chatPhotoUrl,
-      lastMessage: userChat.lastMessage,
-      contactId: userChat.contactId,
-      lastMessageTimestamp: userChat.lastMessageTimestamp);
-}
-
-UserContact toUserContactFromUser(User user) {
-  return UserContact(
-      contactId: user.id,
-      displayName: user.displayName,
-      photoUrl: user.photoUrl);
+  final action = factories[E];
+  return action?.call(model);
 }

@@ -9,7 +9,6 @@ class UserProfile with _$UserProfile {
     required String userId,
     required String displayName,
     required String photoUrl,
-    @Default(false) bool isNameEditing,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/material.dart';
 
 /// FNV-1a 64bit hash algorithm optimized for Dart Strings
 int fastHash(String string) {
@@ -25,8 +25,12 @@ String calcChatHash(String id, String idOther) {
       .toString();
 }
 
-Future<bool> checkConnection() async {
-  final ConnectivityResult connectivityResult =
-      await Connectivity().checkConnectivity();
-  return connectivityResult == ConnectivityResult.none ? false : true;
+void pushPage(BuildContext context, Widget page) {
+  Navigator.of(context).push(MaterialPageRoute(builder: (context) => page));
+}
+
+void pushPageAndRemoveAll(BuildContext context, Widget page) {
+  // Get.to(page);
+  Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => page), (r) => false);
 }

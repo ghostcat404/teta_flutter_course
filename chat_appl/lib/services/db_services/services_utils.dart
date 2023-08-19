@@ -2,61 +2,68 @@ import 'package:chat_appl/models/fb_models/chat_info.dart';
 import 'package:chat_appl/models/fb_models/message.dart';
 import 'package:chat_appl/models/fb_models/user.dart';
 import 'package:chat_appl/models/fb_models/user_chat.dart';
-import 'package:chat_appl/models/fb_models/user_contact.dart';
-import 'package:chat_appl/services/db_services/database_service.dart';
-import 'package:chat_appl/services/mappers/model_convertation_mappers.dart';
-import 'package:get_it/get_it.dart';
+import 'package:chat_appl/models/fb_models/user_profile.dart';
+import 'package:chat_appl/models/fb_models/user_settings.dart';
 
 // TODO: add ENUMS instead of Strings?
 
-void sortInstancesOf(List<dynamic> dataList, {required instanceKey}) {
-  final factories = <String, void Function(List<dynamic>)>{
-    'chatsMessages': (List<dynamic> dataList) {
+void sortInstancesOf<T>(
+  List<dynamic> dataList,
+) {
+  final factories = <Type, void Function(List<dynamic>)>{
+    Message: (List<dynamic> dataList) {
       dataList.sort((b, a) => a.timestamp.compareTo(b.timestamp));
     },
-    'userContacts': (List<dynamic> dataList) {
+    UserProfile: (List<dynamic> dataList) {
       dataList.sort((a, b) => a.displayName.compareTo(b.displayName));
     },
-    'chatInfos': (List<dynamic> dataList) {
-      dataList.sort(
-          (b, a) => a.lastMessageTimestamp.compareTo(b.lastMessageTimestamp));
+    UserChat: (List<dynamic> dataList) {
+      dataList.sort((b, a) {
+        if (a.lastMessageTimestamp == null) {
+          return 1;
+        }
+        if (b.lastMessageTimestamp == null) {
+          return -1;
+        }
+        return a.lastMessageTimestamp.compareTo(b.lastMessageTimestamp);
+      });
     },
-    'users': (dataList) => dataList,
-    'userChats': (dataList) => dataList,
+    UserSettings: (dataList) => dataList,
+    User: (dataList) => dataList,
   };
 
-  final instance = factories[instanceKey];
+  final instance = factories[T];
   instance!.call(dataList);
 }
 
-dynamic createInstanceOf(Map<String, dynamic> json, {required instanceKey}) {
-  final factories = <String, dynamic Function(Map<String, dynamic>)>{
-    'users': (Map<String, dynamic> json) =>
-        toUserContactFromUser(User.fromJson(json)),
-    'userContacts': (Map<String, dynamic> json) => UserContact.fromJson(json),
-    'chatsMessages': (Map<String, dynamic> json) => Message.fromJson(json),
-    'chatInfos': (Map<String, dynamic> json) => ChatInfo.fromJson(json),
-    'userChats': (Map<String, dynamic> json) => UserChat.fromJson(json),
+T? createInstanceOf<T>(Map<String, dynamic> json) {
+  final factories = <Type, dynamic Function(Map<String, dynamic>)>{
+    UserProfile: (Map<String, dynamic> json) => UserProfile.fromJson(json),
+    UserSettings: (Map<String, dynamic> json) => UserSettings.fromJson(json),
+    Message: (Map<String, dynamic> json) => Message.fromJson(json),
+    ChatInfo: (Map<String, dynamic> json) => ChatInfo.fromJson(json),
+    UserChat: (Map<String, dynamic> json) => UserChat.fromJson(json),
+    User: (Map<String, dynamic> json) => User.fromJson(json),
   };
 
-  final instance = factories[instanceKey];
-  return instance?.call(json);
+  final instance = factories[T]?.call(json);
+  return instance;
 }
 
-void cacheInstance<T>(T? instance, {String? cacheKey}) {
-  final LocalDatabaseService localDbInstance =
-      GetIt.instance<LocalDatabaseService>();
+// void cacheInstance<T>(T? instance, {String? cacheKey}) {
+//   final LocalDatabaseService localDbInstance =
+//       GetIt.instance<LocalDatabaseService>();
 
-  final factories = <String, void Function(T?)>{
-    'userContacts': (dynamic instance) async =>
-        await localDbInstance.cacheUserContact(instance),
-    'userChats': (dynamic instance) async =>
-        await localDbInstance.cacheUserChat(instance),
-    'chatsMessages': (dynamic instance) async =>
-        await localDbInstance.cacheMessage(instance),
-    'null': (dynamic instance) async {}
-  };
-  cacheKey ??= 'null';
-  final action = factories[cacheKey];
-  action?.call(instance);
-}
+//   final factories = <String, void Function(T?)>{
+//     // 'userContacts': (dynamic instance) async =>
+//     //     await localDbInstance.cacheItem<UserContact, DbUserContact>(instance),
+//     // 'userChats': (dynamic instance) async =>
+//     //     await localDbInstance.cacheItem<UserChat, DbUserChat>(instance),
+//     // 'chatsMessages': (dynamic instance) async =>
+//     //     await localDbInstance.cacheItem<Message, DbMessage>(instance),
+//     'null': (dynamic instance) async {}
+//   };
+//   cacheKey ??= 'null';
+//   final action = factories[cacheKey];
+//   action?.call(instance);
+// }

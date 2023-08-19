@@ -1,12 +1,9 @@
 import 'dart:io';
 
-import 'package:chat_appl/services/db_services/database_service.dart';
-import 'package:chat_appl/services/repository/database_repository.dart';
+import 'package:chat_appl/models/db_models/db_user_profile.dart';
+import 'package:chat_appl/models/db_models/db_user_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:chat_appl/pages/home_page.dart';
-import 'package:chat_appl/services/db_services/firebase_database_service.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
@@ -21,7 +18,24 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'models/db_models/db_message.dart';
 import 'models/db_models/db_user.dart';
 import 'models/db_models/db_user_chat.dart';
-import 'models/db_models/db_user_contact.dart';
+
+class Logger extends ProviderObserver {
+  @override
+  void didUpdateProvider(
+    ProviderBase<Object?> provider,
+    Object? previousValue,
+    Object? newValue,
+    ProviderContainer container,
+  ) {
+    print('''
+{
+  "provider": "${provider.name ?? provider.runtimeType}",
+  "providerContainer:" "$container"
+  "newValue": "$newValue"
+  "previousValuse:" "$previousValue"
+}''');
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,19 +44,17 @@ void main() async {
     name: "chat_appl",
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final FirebaseDatabase dbInstance =
-      FirebaseDatabase.instanceFor(app: firebaseApp);
   // dbInstance.setPersistenceEnabled(true);
 
-  FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-  NotificationSettings notificationSettings = await firebaseMessaging
-      .requestPermission(alert: true, badge: true, sound: true);
-  if (notificationSettings.authorizationStatus ==
-      AuthorizationStatus.authorized) {
-    print('User granted permission');
-  } else {
-    print('User declined or has not accepted permission');
-  }
+  // FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  // NotificationSettings notificationSettings = await firebaseMessaging
+  //     .requestPermission(alert: true, badge: true, sound: true);
+  // if (notificationSettings.authorizationStatus ==
+  //     AuthorizationStatus.authorized) {
+  //   print('User granted permission');
+  // } else {
+  //   print('User declined or has not accepted permission');
+  // }
   // final fcmToken = await firebaseMessaging.getToken();
   // print('fcmToken: $fcmToken');
 
@@ -53,26 +65,20 @@ void main() async {
   // Isar database init
   final Directory dir = await getApplicationDocumentsDirectory();
   final Isar isarDb = await Isar.open(
-    [DbUserSchema, DbMessageSchema, DbUserContactSchema, DbUserChatSchema],
+    [
+      DbUserSchema,
+      DbMessageSchema,
+      DbUserChatSchema,
+      DbUserSettingsSchema,
+      DbUserProfileSchema
+    ],
     directory: dir.path,
   );
 
-  // Singleton instances init
   final GetIt getIt = GetIt.instance;
-
-  final FirebaseDatabaseService dbService = FirebaseDatabaseService(dbInstance);
-  final LocalDatabaseService localDbService = LocalDatabaseService(isarDb);
-  final DatabaseRepository dbRepository = DatabaseRepository(
-      localDbInstance: localDbService, dbInstance: dbService);
   getIt.registerSingleton<Isar>(isarDb);
   getIt.registerSingleton<FirebaseApp>(firebaseApp);
-  getIt.registerSingleton<FirebaseDatabaseService>(dbService);
-  getIt.registerSingleton<FirebaseMessaging>(firebaseMessaging);
-  getIt.registerSingleton<NotificationSettings>(notificationSettings);
-  getIt.registerSingleton<LocalDatabaseService>(localDbService);
-  getIt.registerSingleton<DatabaseRepository>(dbRepository);
-
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(ProviderScope(observers: [Logger()], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -102,9 +108,7 @@ class MyApp extends StatelessWidget {
           );
         },
         '/home-page': (context) {
-          return const HomePage(
-            currentPageIndex: 2,
-          );
+          return const HomePage();
         },
         '/phone': (context) => PhoneInputScreen(actions: [
               SMSCodeRequestedAction((context, action, flowKey, phoneNumber) {

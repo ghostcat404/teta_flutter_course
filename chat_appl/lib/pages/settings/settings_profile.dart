@@ -46,8 +46,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               leading: const Icon(Icons.qr_code),
               title: const Text('Share profile'),
               onTap: () {
-                Navigator.of(context).push(PageRouteBuilder(
-                  pageBuilder: (context, _, __) => Scaffold(
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => Scaffold(
                     appBar: AppBar(
                       title: const Text('Share profile'),
                     ),
@@ -81,8 +81,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             child: ListTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Show GeoLocation'),
-              onTap: () => Navigator.of(context).push(PageRouteBuilder(
-                  pageBuilder: (context, _, __) => const GeolocatorWidget())),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const GeolocatorWidget())),
             ),
           ),
           Card(

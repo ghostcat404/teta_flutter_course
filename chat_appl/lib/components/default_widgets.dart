@@ -80,3 +80,37 @@ class DefaultProgressIndicator extends StatelessWidget {
     );
   }
 }
+
+class ErrorHandledWidget extends StatelessWidget {
+  const ErrorHandledWidget({super.key, required this.error});
+  final Object error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('Error: $error'));
+  }
+}
+
+class CustomButtonWidget extends StatelessWidget {
+  const CustomButtonWidget(
+      {super.key,
+      required this.icon,
+      required this.buttonName,
+      this.onTapFunction});
+
+  final Function()? onTapFunction;
+  final String buttonName;
+  final Icon icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton.large(
+      heroTag: buttonName,
+      onPressed: onTapFunction,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [icon, Text(buttonName)],
+      ),
+    );
+  }
+}

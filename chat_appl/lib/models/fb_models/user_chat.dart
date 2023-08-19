@@ -11,7 +11,7 @@ class UserChat with _$UserChat {
     required String chatPhotoUrl,
     required String lastMessage,
     required String contactId,
-    required int? lastMessageTimestamp,
+    int? lastMessageTimestamp,
   }) = _UserChat;
 
   factory UserChat.fromJson(Map<String, dynamic> json) =>
