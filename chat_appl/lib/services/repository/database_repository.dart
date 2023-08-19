@@ -29,12 +29,15 @@ class DatabaseRepository {
   }
 
   Future<T?> getModelByIdOrRef<T, E>(String modelId, String ref) async {
+    final T? cachedModel = await localDbInstance.getModelById<T, E>(modelId);
     if (connectionIsAvailableFlg) {
       final T? model = await dbInstance.getModelByRef<T>(ref);
-      cacheModel<T, E>(model);
+      if (cachedModel == null) {
+        cacheModel<T, E>(model);
+      }
       return model;
     }
-    return await localDbInstance.getModelById<T, E>(modelId);
+    return cachedModel;
   }
 
   Future addOrUpdateModelByRef<T>(String ref, T model) async {
@@ -56,11 +59,12 @@ class DatabaseRepository {
     if (connectionIsAvailableFlg) {
       final Stream<List<T?>> modelsStream =
           dbInstance.getStreamOfListOfModelsByRef<T>(ref);
-      modelsStream.map((List<T?> models) {
+      final Stream<List<T?>> chachedModelsStream =
+          modelsStream.map((List<T?> models) {
         cacheListModels<T, E>(models);
         return models;
       });
-      return modelsStream;
+      return chachedModelsStream;
     }
     return Stream.fromFuture(localDbInstance.getListOfModels<T, E>());
   }
