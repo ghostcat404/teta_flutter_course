@@ -1,29 +1,17 @@
 import 'package:chat_appl/pages/profile/geo_location_page.dart';
-import 'package:chat_appl/services/db_services/database_service.dart';
+import 'package:chat_appl/providers/firebase_providers/firebase_providers.dart';
+import 'package:chat_appl/providers/repository_providers/repository_providers.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class ProfileSettingsPage extends StatefulWidget {
+class ProfileSettingsPage extends ConsumerWidget {
   const ProfileSettingsPage({super.key});
 
   @override
-  State<ProfileSettingsPage> createState() => _ProfileSettingsPageState();
-}
-
-class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
-  Future<void> clearAllCache() async =>
-      await GetIt.instance<LocalDatabaseService>().clearAllCache();
-
-  Future<void> _signOut() async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushNamed(context, '/sign-in');
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile Settings'),
@@ -36,7 +24,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 leading: const Icon(Icons.cleaning_services),
                 title: const Text('Clear all cache'),
                 onTap: () async {
-                  await clearAllCache();
+                  await ref.read(dbRepositoryProvider).clearAllCache();
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text('All cached data have cleared!')));
                 }),
@@ -89,7 +77,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             child: ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text('Sign Out'),
-              onTap: () async => await _signOut(),
+              onTap: () async =>
+                  await ref.watch(firebaseAuthProvider).signOut(),
             ),
           ),
         ]),

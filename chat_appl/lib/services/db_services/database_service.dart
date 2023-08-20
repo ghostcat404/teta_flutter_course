@@ -2,7 +2,9 @@ import 'dart:core';
 
 import 'package:chat_appl/models/db_models/db_message.dart';
 import 'package:chat_appl/models/db_models/db_user_chat.dart';
-import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/models/db_models/db_user_profile.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/services/db_services/services_utils.dart';
 import 'package:chat_appl/services/mappers/model_convertation_mappers.dart';
 import 'package:chat_appl/utils/utils.dart';
 import 'package:isar/isar.dart';
@@ -17,12 +19,14 @@ class LocalDatabaseService {
         () async => await isarDbInstance.collection<DbUserChat>().clear());
     await isarDbInstance.writeTxn(
         () async => await isarDbInstance.collection<DbMessage>().clear());
+    await isarDbInstance.writeTxn(
+        () async => await isarDbInstance.collection<DbUserProfile>().clear());
   }
 
   Future cacheItem<E, T>(E item) async {
-    await isarDbInstance.writeTxn(() async => await isarDbInstance
-        .collection<T>()
-        .put(convertModelGetter<E, T>(item) as T));
+    final T convertedItem = convertModelGetter<E, T>(item) as T;
+    await isarDbInstance.writeTxn(
+        () async => await isarDbInstance.collection<T>().put(convertedItem));
   }
 
   Future deleteCachedItemById<T>(String itemId) async {
@@ -39,8 +43,13 @@ class LocalDatabaseService {
     return null;
   }
 
-  Future<List<T?>> getListOfModels<T, E>() async {
-    final List<E?> dbModels = await isarDbInstance.txn(() async {
+  Future<List<T?>> getListOfModelsByIndexId<T, E>({String? indexId}) async {
+    final List<dynamic> dbModels = await isarDbInstance.txn(() async {
+      if (indexId != null) {
+        return await isarDbInstance.collection<E>().buildQuery(whereClauses: [
+          IndexWhereClause.equalTo(indexName: 'indexId', value: [indexId])
+        ]).findAll();
+      }
       return await isarDbInstance.collection<E>().where().findAll();
     });
     final List<T?> models = [];
@@ -49,19 +58,25 @@ class LocalDatabaseService {
         models.add(convertModelGetter<E, T>(dbModel as E));
       }
     }
+    sortInstancesOf<T>(models);
     return models;
   }
 
-  Future<List<UserChat?>> getUserChats() async {
-    final List<DbUserChat?> dbUserChats = await isarDbInstance.txn(() async {
-      return await isarDbInstance.collection<DbUserChat>().where().findAll();
+  Future<List<Message?>> getListOfMessageByChatId(String chatId) async {
+    final List<DbMessage?> dbModels = await isarDbInstance.txn(() async {
+      return isarDbInstance
+          .collection<DbMessage>()
+          .filter()
+          .chatIdEqualTo(chatId)
+          .findAll();
     });
-    final List<UserChat?> userChats = [];
-    if (dbUserChats.isNotEmpty) {
-      for (DbUserChat? dbUserChat in dbUserChats) {
-        userChats.add(convertModelGetter<DbUserChat, UserChat>(dbUserChat!));
+
+    final List<Message?> models = [];
+    if (dbModels.isNotEmpty) {
+      for (DbMessage? dbModel in dbModels) {
+        models.add(convertModelGetter<DbMessage, Message>(dbModel!));
       }
     }
-    return userChats;
+    return models;
   }
 }

@@ -18,6 +18,10 @@ class DatabaseRepository {
   final LocalDatabaseService localDbInstance;
   final bool connectionIsAvailableFlg;
 
+  Future clearAllCache() async {
+    await localDbInstance.clearAllCache();
+  }
+
   Future cacheModel<T, E>(T? model) async {
     if (model != null) localDbInstance.cacheItem<T, E>(model);
   }
@@ -52,10 +56,11 @@ class DatabaseRepository {
       cacheListModels<T, E>(models);
       return models;
     }
-    return await localDbInstance.getListOfModels<T, E>();
+    return await localDbInstance.getListOfModelsByIndexId<T, E>();
   }
 
-  Stream<List<T?>> getStreamOfListOfModels<T, E>(String ref) {
+  Stream<List<T?>> getStreamOfListOfModels<T, E>(String ref,
+      {String? indexId}) {
     if (connectionIsAvailableFlg) {
       final Stream<List<T?>> modelsStream =
           dbInstance.getStreamOfListOfModelsByRef<T>(ref);
@@ -66,7 +71,8 @@ class DatabaseRepository {
       });
       return chachedModelsStream;
     }
-    return Stream.fromFuture(localDbInstance.getListOfModels<T, E>());
+    return Stream<List<T?>>.fromFuture(
+        localDbInstance.getListOfModelsByIndexId<T, E>(indexId: indexId));
   }
 
   Future createChatWithUser(

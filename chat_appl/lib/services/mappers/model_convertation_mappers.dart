@@ -29,16 +29,19 @@ T? convertModelGetter<E, T>(E model) {
         ) as T,
     Message: (dynamic model) => DbMessage(
         messageId: model.messageId,
+        chatId: model.chatId,
         text: model.text,
         timestamp: model.timestamp,
         userDisplayName: model.userDisplayName,
-        senderId: model.senderId) as T,
+        senderId: model.senderId,
+        indexId: model.chatId) as T,
     DbMessage: (dynamic model) => Message(
         messageId: model.messageId,
         text: model.text,
         timestamp: model.timestamp,
         userDisplayName: model.userDisplayName,
-        senderId: model.senderId) as T,
+        senderId: model.senderId,
+        chatId: model.chatId) as T,
     UserChat: (dynamic model) => DbUserChat(
         chatId: model.chatId,
         chatName: model.chatName,

@@ -121,11 +121,13 @@ class FirebaseDatabaseService {
         dbInstance.ref(contactMessageStrRef);
 
     final message = Message(
-        messageId: messageId,
-        userDisplayName: userProfile.displayName,
-        text: text,
-        timestamp: currentTimestamp,
-        senderId: userProfile.userId);
+      messageId: messageId,
+      senderId: userProfile.userId,
+      chatId: chatId,
+      userDisplayName: userProfile.displayName,
+      text: text,
+      timestamp: currentTimestamp,
+    );
     final Map<String, dynamic> jsonMessage = message.toJson();
     await messageRef.set(jsonMessage);
     await userMessagesRef.set(jsonMessage);

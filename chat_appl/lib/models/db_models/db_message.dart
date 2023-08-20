@@ -7,14 +7,19 @@ part 'db_message.g.dart';
 class DbMessage {
   DbMessage(
       {required this.messageId,
+      required this.chatId,
       required this.text,
       required this.timestamp,
       required this.userDisplayName,
-      required this.senderId});
+      required this.senderId,
+      required this.indexId});
   String messageId;
+  String chatId;
   Id get id => fastHash(messageId);
   String userDisplayName;
   String text;
   String senderId;
   int timestamp;
+  @Index()
+  String indexId;
 }

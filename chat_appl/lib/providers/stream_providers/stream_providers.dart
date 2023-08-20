@@ -48,5 +48,6 @@ Stream<List<Message?>> messagesStream(MessagesStreamRef ref,
   return ref
       .watch(dbRepositoryProvider)
       .getStreamOfListOfModels<Message, DbMessage>(
-          'userChatsMessages/$currentUserId/$chatId/messages');
+          'userChatsMessages/$currentUserId/$chatId/messages',
+          indexId: chatId);
 }
