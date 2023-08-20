@@ -21,6 +21,16 @@ class ChatUIWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ChatPage(
+              chat: userChat,
+              contactId: userChat.contactId,
+            ),
+          ),
+        );
+      },
       title: Text(userChat.chatName),
       leading: ProfileAvatar(avatarUrl: userChat.chatPhotoUrl),
       trailing: Text(userChat.lastMessageTimestamp == null
@@ -46,20 +56,9 @@ class ChatsList extends ConsumerWidget {
       separatorBuilder: (BuildContext context, int index) => const Divider(),
       itemCount: chats.length,
       itemBuilder: (context, index) {
-        return InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ChatPage(
-                    chat: chats[index]!,
-                    contactId: chats[index]!.contactId,
-                  ),
-                ),
-              );
-            },
-            child: ChatUIWidget(
-              userChat: chats[index]!,
-            ));
+        return ChatUIWidget(
+          userChat: chats[index]!,
+        );
       },
     );
   }
