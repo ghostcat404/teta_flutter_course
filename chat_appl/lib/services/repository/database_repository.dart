@@ -130,9 +130,9 @@ class DatabaseRepository {
 
   Future deleteChat(String currUserId, UserChat userChat) async {
     if (connectionIsAvailableFlg) {
+      await clearChat(currUserId, userChat);
       await dbInstance.addOrUpdateModelByRef(
           null, 'userChats/$currUserId/${userChat.chatId}');
-      await clearChat(currUserId, userChat);
     }
   }
 

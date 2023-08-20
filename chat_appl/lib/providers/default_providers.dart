@@ -6,7 +6,9 @@ part 'default_providers.g.dart';
 class TextController extends _$TextController {
   @override
   TextEditingController build({String? text}) {
-    return TextEditingController(text: text);
+    final TextEditingController controller = TextEditingController(text: text);
+    ref.onDispose(() => controller.dispose());
+    return controller;
   }
 
   void clear() => state.clear();

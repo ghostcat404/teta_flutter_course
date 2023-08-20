@@ -5,10 +5,12 @@ import 'package:chat_appl/components/buttons/default_buttons.dart';
 import 'package:chat_appl/components/default_widgets.dart';
 import 'package:chat_appl/models/fb_models/user_chat.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
+import 'package:chat_appl/providers/firebase_providers/firebase_providers.dart';
 import 'package:chat_appl/providers/repository_providers/repository_providers.dart';
 import 'package:chat_appl/providers/stream_providers/stream_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:chat_appl/components/avatar_circle.dart';
@@ -52,12 +54,30 @@ class ChatsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final String? currUserId = ref.watch(authStateChangesProvider);
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) => const Divider(),
       itemCount: chats.length,
       itemBuilder: (context, index) {
-        return ChatUIWidget(
-          userChat: chats[index]!,
+        return Slidable(
+          key: ValueKey(chats[index]!.chatId),
+          endActionPane:
+              ActionPane(motion: const ScrollMotion(), children: <Widget>[
+            SlidableAction(
+              onPressed: (context) {
+                ref
+                    .watch(dbRepositoryProvider)
+                    .deleteChat(currUserId!, chats[index]!);
+              },
+              backgroundColor: const Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Delete',
+            )
+          ]),
+          child: ChatUIWidget(
+            userChat: chats[index]!,
+          ),
         );
       },
     );
