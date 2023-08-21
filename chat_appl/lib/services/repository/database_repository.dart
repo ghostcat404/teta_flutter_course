@@ -138,9 +138,17 @@ class DatabaseRepository {
 
   Future<UserChat?> getOrCreateChatByContactId(
       String currUserId, String contactId) async {
-    final String userChatRef = 'userChats/$currUserId/$contactId';
-    UserChat? userChat =
-        await getModelByIdOrRef<UserChat, DbUserChat>(currUserId, userChatRef);
+    final String userChatRef = 'userChats/$currUserId';
+    final List<UserChat?> chats =
+        await getListOfModels<UserChat, DbUserChat>(userChatRef);
+    String? chatId;
+    for (UserChat? chat in chats) {
+      if (chat!.contactId == contactId) {
+        chatId = chat.chatId;
+      }
+    }
+    UserChat? userChat = await getModelByIdOrRef<UserChat, DbUserChat>(
+        currUserId, '$userChatRef/$chatId');
     if (userChat != null) {
       return userChat;
     } else {
