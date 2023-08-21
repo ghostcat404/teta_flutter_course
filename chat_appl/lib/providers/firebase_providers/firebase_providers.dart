@@ -3,6 +3,7 @@ import 'package:chat_appl/services/fb_store_services/firebase_storage_service.da
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -51,3 +52,25 @@ FirebaseStorageService? firebaseStorageService(FirebaseStorageServiceRef ref) {
   }
   return null;
 }
+
+@riverpod
+FirebaseMessaging firebaseMessaging(FirebaseMessagingRef ref) {
+  return FirebaseMessaging.instance;
+}
+
+// @riverpod
+// NotificationSettings notificationSettings(NotificationSettingsRef ref) {
+//   return ;
+// }
+
+  // FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  // NotificationSettings notificationSettings = await firebaseMessaging
+  //     .requestPermission(alert: true, badge: true, sound: true);
+  // if (notificationSettings.authorizationStatus ==
+  //     AuthorizationStatus.authorized) {
+  //   print('User granted permission');
+  // } else {
+  //   print('User declined or has not accepted permission');
+  // }
+  // final fcmToken = await firebaseMessaging.getToken();
+  // print('fcmToken: $fcmToken');

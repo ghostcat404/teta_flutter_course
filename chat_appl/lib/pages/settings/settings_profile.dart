@@ -77,8 +77,10 @@ class ProfileSettingsPage extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text('Sign Out'),
-              onTap: () async =>
-                  await ref.watch(firebaseAuthProvider).signOut(),
+              onTap: () async {
+                await ref.watch(firebaseAuthProvider).signOut();
+                Navigator.of(context).pushNamed('/sign-in');
+              },
             ),
           ),
         ]),

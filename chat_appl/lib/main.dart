@@ -44,19 +44,6 @@ void main() async {
     name: "chat_appl",
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // dbInstance.setPersistenceEnabled(true);
-
-  // FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-  // NotificationSettings notificationSettings = await firebaseMessaging
-  //     .requestPermission(alert: true, badge: true, sound: true);
-  // if (notificationSettings.authorizationStatus ==
-  //     AuthorizationStatus.authorized) {
-  //   print('User granted permission');
-  // } else {
-  //   print('User declined or has not accepted permission');
-  // }
-  // final fcmToken = await firebaseMessaging.getToken();
-  // print('fcmToken: $fcmToken');
 
   FirebaseUIAuth.configureProviders([
     PhoneAuthProvider(),

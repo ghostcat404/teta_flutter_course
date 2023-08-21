@@ -72,29 +72,6 @@ class FirebaseDatabaseService {
     });
   }
 
-  Future addOrUpdateUserChat(
-      String userId, String chatId, UserProfile? contact) async {
-    final DatabaseReference userChatsRef =
-        dbInstance.ref('userChats/$userId/$chatId');
-    UserChat? userChat;
-    if (contact != null) {
-      final DataSnapshot chatInfoDataSnapshot =
-          await dbInstance.ref('chatInfos/$chatId').get();
-      if (chatInfoDataSnapshot.value != null) {
-        final ChatInfo chatInfo = ChatInfo.fromJson(
-            Map<String, dynamic>.from(chatInfoDataSnapshot.value! as Map));
-        userChat = UserChat(
-            chatId: chatId,
-            chatName: contact.displayName,
-            chatPhotoUrl: contact.photoUrl,
-            contactId: contact.userId,
-            lastMessage: chatInfo.lastMessage,
-            lastMessageTimestamp: chatInfo.lastMessageTimestamp);
-      }
-    }
-    userChatsRef.set(userChat?.toJson());
-  }
-
   Future sendMessage(String text, UserProfile userProfile, String chatId,
       String contactId) async {
     final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
@@ -156,17 +133,30 @@ class FirebaseDatabaseService {
     return chatId;
   }
 
-  // у обоих пользователей нет чатов
   Future createChatWithUser(String currUserId, UserProfile contact) async {
     String? chatId = await getChatIdFromContact(currUserId, contact);
     final UserProfile? currUserProfile =
         await getModelByRef<UserProfile>('userProfiles/$currUserId');
-    chatId ??= await createNewChat();
-    await addOrUpdateUserChat(currUserId, chatId, contact);
-    await addOrUpdateUserChat(contact.userId, chatId, currUserProfile!);
+    if (chatId == null) {
+      chatId = await createNewChat();
+      final UserChat contactChat = UserChat(
+          chatId: chatId,
+          chatName: currUserProfile!.displayName,
+          chatPhotoUrl: currUserProfile.photoUrl,
+          lastMessage: '',
+          contactId: currUserId);
+      await addOrUpdateModelByRef(
+          contactChat, 'userChats/${contact.userId}/$chatId');
+    }
+    final UserChat userChat = UserChat(
+        chatId: chatId,
+        chatName: contact.displayName,
+        chatPhotoUrl: contact.photoUrl,
+        lastMessage: '',
+        contactId: contact.userId);
+    await addOrUpdateModelByRef(userChat, 'userChats/$currUserId/$chatId');
   }
 
-  // у контакта есть чат с нами
   Future<String?> getChatIdFromContact(
       String currUserId, UserProfile contact) async {
     final List<UserChat?> contactChats =
