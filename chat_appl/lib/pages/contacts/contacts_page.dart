@@ -8,6 +8,7 @@ import 'package:chat_appl/providers/repository_providers/repository_providers.da
 import 'package:chat_appl/providers/stream_providers/stream_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ContactsList extends ConsumerWidget {
   const ContactsList({super.key, required this.contacts});
@@ -22,14 +23,17 @@ class ContactsList extends ConsumerWidget {
         itemBuilder: (context, index) {
           final UserProfile? contact = contacts[index];
           if (contact!.userId != currUserId) {
-            return ListTile(
-              leading: ProfileAvatar(
-                avatarUrl: contact.photoUrl,
+            return Slidable(
+              key: ValueKey(contact.userId),
+              child: ListTile(
+                leading: ProfileAvatar(
+                  avatarUrl: contact.photoUrl,
+                ),
+                title: Text(contact.displayName),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) =>
+                        ContactCard(contactId: contact.userId))),
               ),
-              title: Text(contact.displayName),
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      ContactCard(contactId: contact.userId))),
             );
           }
           return null;

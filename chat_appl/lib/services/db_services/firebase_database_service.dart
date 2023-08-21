@@ -170,7 +170,7 @@ class FirebaseDatabaseService {
   Future<String?> getChatIdFromContact(
       String currUserId, UserProfile contact) async {
     final List<UserChat?> contactChats =
-        await getModelsListByRef<UserChat>('userChats/$currUserId');
+        await getModelsListByRef<UserChat>('userChats/${contact.userId}');
     String? chatId;
     for (UserChat? contactChat in contactChats) {
       if (contactChat?.contactId == currUserId) {

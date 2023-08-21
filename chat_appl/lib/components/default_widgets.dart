@@ -1,5 +1,6 @@
 import 'package:chat_appl/components/avatar_circle.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class NoDataWidget extends StatelessWidget {
   const NoDataWidget(this.displayText, {super.key});
@@ -112,5 +113,23 @@ class CustomButtonWidget extends StatelessWidget {
         children: [icon, Text(buttonName)],
       ),
     );
+  }
+}
+
+class DefaultActionPane extends StatelessWidget {
+  const DefaultActionPane({super.key, required this.deleteAction});
+  final Function() deleteAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionPane(motion: const ScrollMotion(), children: <Widget>[
+      SlidableAction(
+        onPressed: (context) => deleteAction,
+        backgroundColor: const Color(0xFFFE4A49),
+        foregroundColor: Colors.white,
+        icon: Icons.delete,
+        label: 'Delete',
+      )
+    ]);
   }
 }
