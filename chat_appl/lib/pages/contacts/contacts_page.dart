@@ -25,6 +25,19 @@ class ContactsList extends ConsumerWidget {
           if (contact!.userId != currUserId) {
             return Slidable(
               key: ValueKey(contact.userId),
+              endActionPane:
+                  ActionPane(motion: const ScrollMotion(), children: <Widget>[
+                SlidableAction(
+                  onPressed: (context) {
+                    ref.watch(dbRepositoryProvider).createOrUpdateUserContact(
+                        currUserId!, contact.userId, null);
+                  },
+                  backgroundColor: const Color(0xFFFE4A49),
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete,
+                  label: 'Delete',
+                )
+              ]),
               child: ListTile(
                 leading: ProfileAvatar(
                   avatarUrl: contact.photoUrl,
