@@ -3,10 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  connectivity_plus
   desktop_webview_auth
   file_selector_windows
   firebase_core
   geolocator_windows
+  isar_flutter_libs
   url_launcher_windows
 )
 

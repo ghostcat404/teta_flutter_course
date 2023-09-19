@@ -1,140 +1,115 @@
+// TODO: refactoring
 import 'dart:math';
 
-import 'package:chat_appl/models/chat_info.dart';
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/chats/chat_creation_page.dart';
+import 'package:chat_appl/components/buttons/default_buttons.dart';
+import 'package:chat_appl/components/default_widgets.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
 import 'package:chat_appl/pages/chats/chat_page.dart';
-import 'package:chat_appl/services/db_services/firebase_database_service.dart';
-import 'package:chat_appl/shimmers/chats_shimmers.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:chat_appl/providers/firebase_providers/firebase_providers.dart';
+import 'package:chat_appl/providers/repository_providers/repository_providers.dart';
+import 'package:chat_appl/providers/stream_providers/stream_providers.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class ChatsPage extends StatefulWidget {
-  const ChatsPage({super.key, required this.user});
+import 'package:chat_appl/components/avatar_circle.dart';
 
-  final User? user;
+class ChatUIWidget extends StatelessWidget {
+  const ChatUIWidget({super.key, required this.userChat});
 
-  @override
-  State<ChatsPage> createState() => _ChatsPageState();
-}
-
-class _ChatsPageState extends State<ChatsPage> {
-  late FirebaseDatabaseService dbService;
-
-  @override
-  void initState() {
-    final GetIt getIt = GetIt.instance;
-    dbService = getIt<FirebaseDatabaseService>();
-    super.initState();
-  }
-
-  void selectUserToCreateAChat() {
-    Navigator.of(context).push(PageRouteBuilder(
-        pageBuilder: (context, _, __) => StreamBuilder(
-            stream: dbService.contactsStream,
-            builder: (context, snapshot) {
-              final bool dataIsLoaded =
-                  snapshot.hasData && snapshot.data != null;
-              return ChatCreationPage(
-                dataIsLoaded: dataIsLoaded,
-                dbService: dbService,
-                snapshot: snapshot,
-              );
-            })));
-  }
+  final UserChat userChat;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Chats'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              iconSize: 25.0,
-              onPressed: selectUserToCreateAChat,
+    return ListTile(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ChatPage(
+              chat: userChat,
+              contactId: userChat.contactId,
+            ),
+          ),
+        );
+      },
+      title: Text(userChat.chatName),
+      leading: ProfileAvatar(avatarUrl: userChat.chatPhotoUrl),
+      trailing: Text(userChat.lastMessageTimestamp == null
+          ? ''
+          : timeago
+              .format(DateTime.fromMillisecondsSinceEpoch(
+                  userChat.lastMessageTimestamp!))
+              .toString()),
+      subtitle: Text(userChat.lastMessage == ''
+          ? ''
+          : '${userChat.lastMessage.substring(0, min(userChat.lastMessage.length, 16))}...'),
+    );
+  }
+}
+
+class ChatsList extends ConsumerWidget {
+  const ChatsList({super.key, required this.chats});
+  final List<UserChat?> chats;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String? currUserId = ref.watch(authStateChangesProvider);
+    return ListView.separated(
+      separatorBuilder: (BuildContext context, int index) => const Divider(),
+      itemCount: chats.length,
+      itemBuilder: (context, index) {
+        return Slidable(
+          key: ValueKey(chats[index]!.chatId),
+          endActionPane:
+              ActionPane(motion: const ScrollMotion(), children: <Widget>[
+            SlidableAction(
+              onPressed: (context) {
+                ref
+                    .watch(dbRepositoryProvider)
+                    .deleteChat(currUserId!, chats[index]!);
+              },
+              backgroundColor: const Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Delete',
             )
-          ],
-        ),
-        body: StreamBuilder(
-          builder: (context, chatInfoSnapshot) {
-            if (chatInfoSnapshot.hasData &&
-                chatInfoSnapshot.data != null &&
-                chatInfoSnapshot.data!.isNotEmpty) {
-              return ListView.separated(
-                separatorBuilder: (BuildContext context, int index) =>
-                    const Divider(),
-                itemCount: chatInfoSnapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final ChatInfo? chatInfo = chatInfoSnapshot.data![index];
-                  return ListTile(
-                    title: Text(chatInfo!.chatName),
-                    trailing: Text(chatInfo.lastMessageTimestamp == null
-                        ? ''
-                        : timeago
-                            .format(DateTime.fromMillisecondsSinceEpoch(
-                                chatInfo.lastMessageTimestamp!))
-                            .toString()),
-                    subtitle: Text(chatInfo.lastMessage == ''
-                        ? ''
-                        : '${chatInfo.lastMessage.substring(0, min(chatInfo.lastMessage.length, 16))}...'),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder: (context, _, __) => StreamBuilder(
-                            builder: (context, messageSnapshot) {
-                              bool dataIsLoaded = (messageSnapshot.hasData &&
-                                  messageSnapshot.data != null);
-                              return AnimatedSwitcher(
-                                duration: const Duration(seconds: 1),
-                                child: dataIsLoaded
-                                    ? ChatPage(
-                                        messageList: messageSnapshot.data!,
-                                        chatId: chatInfo.chatId,
-                                        user: widget.user,
-                                      )
-                                    : const ListMessagesShimmer(),
-                              );
-                            },
-                            stream: dbService.getMessageStream(chatInfo.chatId),
-                          ),
-                          transitionsBuilder: (context, animation, _, child) {
-                            const begin = Offset(0.0, 1.0);
-                            const end = Offset.zero;
-                            const curve = Curves.ease;
+          ]),
+          child: ChatUIWidget(
+            userChat: chats[index]!,
+          ),
+        );
+      },
+    );
+  }
+}
 
-                            var tween = Tween(begin: begin, end: end)
-                                .chain(CurveTween(curve: curve));
-
-                            return SlideTransition(
-                              position: animation.drive(tween),
-                              child: child,
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            } else {
-              return const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('There is no chats yet'),
-                    ],
-                  ),
+class ChatsPage extends ConsumerWidget {
+  const ChatsPage({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chatsStream = ref.watch(chatsStreamProvider);
+    return chatsStream.when(
+        data: (chats) {
+          return Scaffold(
+              appBar: AppBar(
+                title: const Text('Chats'),
+                actions: [
+                  CreationButton(
+                    appBarTitle: 'Create Chat',
+                    onSuggestionTapFunc:
+                        ref.read(dbRepositoryProvider).createChatWithUser,
+                    nextIndex: 1,
+                  )
                 ],
-              );
-            }
-          },
-          stream: dbService
-              .getChatInfoStream(FirebaseAuth.instance.currentUser!.uid),
-        ));
+              ),
+              body: chats.isNotEmpty
+                  ? ChatsList(
+                      chats: chats,
+                    )
+                  : const NoDataWidget('There are no chats yet'));
+        },
+        error: (error, stackTrace) => ErrorHandledWidget(error: error),
+        loading: () => const DefaultProgressIndicator());
   }
 }

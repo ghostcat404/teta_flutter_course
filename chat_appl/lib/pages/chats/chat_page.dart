@@ -1,77 +1,79 @@
-import 'package:chat_appl/models/user.dart';
-import 'package:chat_appl/pages/chats/components/message.dart';
-import 'package:chat_appl/pages/chats/components/typing_field.dart';
+import 'package:chat_appl/components/default_widgets.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/pages/chats/chat_details.dart';
+import 'package:chat_appl/pages/chats/message/message.dart';
+import 'package:chat_appl/pages/chats/message/typing_field.dart';
 import 'package:chat_appl/pages/home_page.dart';
+import 'package:chat_appl/providers/stream_providers/stream_providers.dart';
+import 'package:chat_appl/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatPage extends StatefulWidget {
-  const ChatPage(
-      {super.key,
-      required this.messageList,
-      required this.chatId,
-      required this.user});
-
-  final List<dynamic> messageList;
-  final String chatId;
-  final User? user;
+class MessagesList extends ConsumerWidget {
+  const MessagesList({super.key, required this.messages});
+  final List<Message?> messages;
 
   @override
-  State<ChatPage> createState() => _ChatPageState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListView.builder(
+      reverse: true,
+      itemCount: messages.length,
+      itemBuilder: (BuildContext context, int index) {
+        return MessageWidget(
+          message: messages[index]!,
+        );
+      },
+    );
+  }
 }
 
-class _ChatPageState extends State<ChatPage> {
-  final TextEditingController _controller = TextEditingController();
+class ChatPage extends ConsumerWidget {
+  const ChatPage({super.key, required this.chat, required this.contactId});
+  final UserChat chat;
+  final String contactId;
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: const ValueKey('ChatPage'),
-      appBar: AppBar(
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Get.previousRoute == ''
-                // TODO: fix 3 tap to go to homepage
-                ? Navigator.of(context).pushAndRemoveUntil(
-                    PageRouteBuilder(
-                        pageBuilder: (context, _, __) => const HomePage(
-                              currentPageIndex: 1,
-                            )),
-                    (r) => false)
-                : Navigator.of(context).pop()),
-        title: const Text('Chat with user'),
-      ),
-      body: widget.messageList.isNotEmpty
-          ? ListView.builder(
-              reverse: true,
-              itemCount: widget.messageList.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MessageWidget(
-                      message: widget.messageList[index],
-                      user: widget.user,
-                    ));
-              },
-            )
-          : const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final messagesStream =
+        ref.watch(messagesStreamProvider(chatId: chat.chatId));
+    return messagesStream.when(
+        data: (messages) {
+          return Scaffold(
+            key: const ValueKey('ChatPage'),
+            appBar: AppBar(
+              leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () {
+                    pushPageAndRemoveAll(
+                        context, const HomePage(initialIndex: 1));
+                  }),
+              title: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [Center(child: Text('There are not messages yet'))],
+                children: [
+                  Text(chat.chatName),
+                ],
               ),
+              actions: [
+                IconButton(
+                    onPressed: () => pushPage(
+                        context,
+                        ChatDetailsScreen(
+                          userChat: chat,
+                        )),
+                    icon: const Icon(Icons.settings))
+              ],
             ),
-      bottomNavigationBar: TypingField(
-        controller: _controller,
-        chatId: widget.chatId,
-        userDisplayName: widget.user?.displayName,
-      ),
-    );
+            body: messages.isNotEmpty
+                ? MessagesList(messages: messages)
+                : const NoDataWidget('There are not messages yet'),
+            bottomNavigationBar: TypingField(
+              chatId: chat.chatId,
+              contactId: contactId,
+            ),
+          );
+        },
+        error: (error, stackTrace) => ErrorHandledWidget(error: error),
+        loading: () => const DefaultProgressIndicator());
   }
 }

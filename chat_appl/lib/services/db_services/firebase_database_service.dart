@@ -1,150 +1,173 @@
-import 'package:chat_appl/models/chat_info.dart';
-import 'package:chat_appl/models/chat_settings.dart';
-import 'package:chat_appl/models/message.dart';
-import 'package:chat_appl/models/user.dart';
+import 'dart:core';
+
+import 'package:chat_appl/models/fb_models/chat_info.dart';
+import 'package:chat_appl/models/fb_models/message.dart';
+import 'package:chat_appl/models/fb_models/user_chat.dart';
+import 'package:chat_appl/models/fb_models/user_profile.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:chat_appl/utils/services_utils.dart';
+import 'package:chat_appl/services/db_services/services_utils.dart';
 
 class FirebaseDatabaseService {
+  FirebaseDatabaseService(this.dbInstance);
+
   final FirebaseDatabase dbInstance;
 
-  FirebaseDatabaseService({required this.dbInstance});
-
-  Future addOrUpdateUserInfo(User user) async {
-    DatabaseReference ref = dbInstance.ref("users/${user.id}");
-    await ref.set(user.toJson());
-  }
-
-  Future addOrUpdateUserChatsInfo(String userId, ChatInfo chatInfo) async {
-    DatabaseReference ref =
-        dbInstance.ref('users/$userId/chatsInfo/${chatInfo.chatId}');
-    await ref.set(chatInfo.toJson());
-  }
-
-  Future createNewChat(String chatId, ChatSettings chatSettings) async {
-    final DatabaseReference dbRef = dbInstance.ref('chats/$chatId');
-    await dbRef.set(chatSettings.toJson());
-    final DatabaseReference msgRef = dbRef.child('messages');
-    msgRef.push().set(null);
-  }
-
-  Future<ChatInfo?> getUserChatsInfo(String userAId, String chatId) async {
-    DataSnapshot chatsInfoSnapshot =
-        await dbInstance.ref('users/$userAId/chatsInfo/$chatId').get();
-    if (chatsInfoSnapshot.value != null) {
-      final ChatInfo chatInfo = ChatInfo.fromJson(
-          Map<String, dynamic>.from(chatsInfoSnapshot.value as Map));
-      return chatInfo;
+  Future<UserProfile?> getUserProfile(String userId) async {
+    final DataSnapshot profileSnapshot =
+        await dbInstance.ref('userProfiles/$userId').get();
+    if (profileSnapshot.value != null) {
+      return UserProfile.fromJson(
+          Map<String, dynamic>.from(profileSnapshot.value! as Map));
     }
     return null;
   }
 
-  Future<String> getUserName(String userId) async {
-    final DataSnapshot dataSnapshot =
-        await dbInstance.ref('users/$userId/displayName').get();
-    return dataSnapshot.value.toString();
-  }
-
-  Future<User?> getUser(String userId) async {
-    final userSnapshot = await dbInstance.ref().child('users/$userId').get();
-    if (userSnapshot.value != null) {
-      final currentUser = Map<String, dynamic>.from(userSnapshot.value as Map);
-      final user = User.fromJson(currentUser);
-      return user;
+  Future<T?> getModelByRef<T>(String ref) async {
+    final DataSnapshot snapshot = await dbInstance.ref(ref).get();
+    if (snapshot.value != null) {
+      return createInstanceOf<T>(
+          Map<String, dynamic>.from(snapshot.value! as Map));
     }
     return null;
   }
 
-  Future<List<Message?>> getMessageListOnce(String chatId) async {
-    final DataSnapshot messagesSnapshot =
-        await dbInstance.ref('chats/$chatId/messages').get();
-    final List<Message?> messageList = [];
-    if (messagesSnapshot.value != null) {
-      final Map<dynamic, dynamic> messages =
-          Map<dynamic, dynamic>.from(messagesSnapshot.value! as Map);
-      messages.forEach((key, value) {
-        final Message? currentMessage =
-            createInstanceOf<Message>(Map<String, dynamic>.from(value));
-        messageList.add(currentMessage);
+  Future addOrUpdateModelByRef(dynamic model, String ref) async {
+    final DatabaseReference reference = dbInstance.ref(ref);
+    await reference.set(model?.toJson());
+  }
+
+  Future<List<T?>> getModelsListByRef<T>(String ref) async {
+    final DataSnapshot snapshot = await dbInstance.ref(ref).get();
+    final List<T?> tList = [];
+    if (snapshot.value != null) {
+      final Map<dynamic, dynamic> listOfJsons =
+          Map<dynamic, dynamic>.from(snapshot.value! as Map);
+      listOfJsons.forEach((key, json) {
+        final T? model = createInstanceOf<T>(
+          Map<String, dynamic>.from(json),
+        );
+        tList.add(model);
       });
-      sortInstancesOf<Message>(messageList);
+      sortInstancesOf<T>(tList);
     }
-    return messageList;
+    return tList;
   }
 
-  Future sendMessage(String text, String userDisplayName, String chatId) async {
-    final DatabaseReference chatDbRef = dbInstance.ref('chats/$chatId');
-    final DatabaseReference usersRef = dbInstance.ref('users');
-
-    final DataSnapshot chatSettingsSnapshot = await chatDbRef.get();
-    final ChatSettings chatSettings = ChatSettings.fromJson(
-        Map<String, dynamic>.from(chatSettingsSnapshot.value! as Map));
-
-    final DatabaseReference refUserA = usersRef.child(chatSettings.userAId);
-    final DatabaseReference refUserB = usersRef.child(chatSettings.userBId);
-    final DataSnapshot snapshotUserA = await refUserA.get();
-    final DataSnapshot snapshotUserB = await refUserB.get();
-    final User userA =
-        User.fromJson(Map<String, dynamic>.from(snapshotUserA.value! as Map));
-    final User userB =
-        User.fromJson(Map<String, dynamic>.from(snapshotUserB.value! as Map));
-
-    final DataSnapshot snapshotChatInfoUserA =
-        await refUserA.child('chatsInfo/$chatId').get();
-    final DataSnapshot snapshotChatInfoUserB =
-        await refUserB.child('chatsInfo/$chatId').get();
-    final ChatInfo chatInfoUserA = ChatInfo.fromJson(
-        Map<String, dynamic>.from(snapshotChatInfoUserA.value! as Map));
-    final ChatInfo chatInfoUserB = ChatInfo.fromJson(
-        Map<String, dynamic>.from(snapshotChatInfoUserB.value! as Map));
-
-    final DatabaseReference chatMessagesRef = chatDbRef.child('messages');
-    final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    final message = Message(
-        userDisplayName: userDisplayName,
-        text: text,
-        timestamp: currentTimestamp);
-    final messageRef = chatMessagesRef.push();
-    await messageRef.set(message.toJson());
-    await addOrUpdateUserChatsInfo(
-        userA.id,
-        ChatInfo(
-            chatId: chatId,
-            userBId: userB.id,
-            chatName: chatInfoUserA.chatName,
-            lastMessage: text,
-            lastMessageTimestamp: currentTimestamp));
-    await addOrUpdateUserChatsInfo(
-        userB.id,
-        ChatInfo(
-            chatId: chatId,
-            userBId: userA.id,
-            chatName: chatInfoUserB.chatName,
-            lastMessage: text,
-            lastMessageTimestamp: currentTimestamp));
-  }
-
-  Stream<List<ChatInfo?>> getChatInfoStream(String userId) =>
-      _getStreamByRef('/users/$userId/chatsInfo');
-  Stream<List<Message?>> getMessageStream(String chatId) =>
-      _getStreamByRef<Message>('chats/$chatId/messages');
-  Stream<List<User?>> get contactsStream => _getStreamByRef<User>('users');
-
-  Stream<List<T?>> _getStreamByRef<T>(String refName) {
+  Stream<List<T?>> getStreamOfListOfModelsByRef<T>(String refName) {
     return dbInstance.ref(refName).onValue.map((event) {
       List<T?> dataList = [];
       if (event.snapshot.value != null) {
         final firebaseMessages = Map<dynamic, dynamic>.from(
             event.snapshot.value as Map<dynamic, dynamic>);
         firebaseMessages.forEach((key, value) {
+          // Move logic to Repository (different Repositories?)
           final currentData = Map<String, dynamic>.from(value);
           final T? instance = createInstanceOf<T>(currentData);
-          if (instance != null) cacheInstanceOf<T>(instance);
+          // if (instance != null) cacheInstance<T>(instance, cacheKey: cacheKey);
           dataList.add(instance);
         });
         sortInstancesOf<T>(dataList);
       }
       return dataList;
     });
+  }
+
+  Future sendMessage(String text, UserProfile userProfile, String chatId,
+      String contactId) async {
+    final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+    final String userChatStrRef = 'userChats/${userProfile.userId}/$chatId';
+    final String contactChatStrRef = 'userChats/$contactId/$chatId';
+    final String chatInfoStrRef = 'chatInfos/$chatId';
+    final String chatMessagesStrRef = 'chatsMessages/$chatId/messages';
+
+    final DatabaseReference chatMessagesRef =
+        dbInstance.ref(chatMessagesStrRef);
+
+    UserChat? userChat = await getModelByRef<UserChat>(userChatStrRef);
+    UserChat? contactChat = await getModelByRef<UserChat>(contactChatStrRef);
+    final ChatInfo? chatInfo = await getModelByRef<ChatInfo>(chatInfoStrRef);
+
+    final messageRef = chatMessagesRef.push();
+    final String messageId = messageRef.key!;
+    final String userMessageStrRef =
+        'userChatsMessages/${userProfile.userId}/$chatId/messages/$messageId';
+    final String contactMessageStrRef =
+        'userChatsMessages/$contactId/$chatId/messages/$messageId';
+    final DatabaseReference userMessagesRef = dbInstance.ref(userMessageStrRef);
+    final DatabaseReference contactMessagesRef =
+        dbInstance.ref(contactMessageStrRef);
+
+    final message = Message(
+      messageId: messageId,
+      senderId: userProfile.userId,
+      chatId: chatId,
+      userDisplayName: userProfile.displayName,
+      text: text,
+      timestamp: currentTimestamp,
+    );
+    final Map<String, dynamic> jsonMessage = message.toJson();
+    await messageRef.set(jsonMessage);
+    await userMessagesRef.set(jsonMessage);
+    await contactMessagesRef.set(jsonMessage);
+
+    await addOrUpdateModelByRef(
+        chatInfo!.copyWith(
+            lastMessage: message.text, lastMessageTimestamp: currentTimestamp),
+        chatInfoStrRef);
+    await addOrUpdateModelByRef(
+        userChat!.copyWith(
+            lastMessage: text, lastMessageTimestamp: currentTimestamp),
+        userChatStrRef);
+    await addOrUpdateModelByRef(
+        contactChat!.copyWith(
+            lastMessage: text, lastMessageTimestamp: currentTimestamp),
+        contactChatStrRef);
+  }
+
+  Future<String> createNewChat() async {
+    // First Chat creation
+    final DatabaseReference chatInfosRef = dbInstance.ref('chatInfos').push();
+    final String chatId = chatInfosRef.key!;
+    final ChatInfo chatInfo = ChatInfo(chatId: chatId, lastMessage: '');
+    await chatInfosRef.set(chatInfo.toJson());
+    return chatId;
+  }
+
+  Future createChatWithUser(String currUserId, UserProfile contact) async {
+    String? chatId = await getChatIdFromContact(currUserId, contact);
+    final UserProfile? currUserProfile =
+        await getModelByRef<UserProfile>('userProfiles/$currUserId');
+    if (chatId == null) {
+      chatId = await createNewChat();
+      final UserChat contactChat = UserChat(
+          chatId: chatId,
+          chatName: currUserProfile!.displayName,
+          chatPhotoUrl: currUserProfile.photoUrl,
+          lastMessage: '',
+          contactId: currUserId);
+      await addOrUpdateModelByRef(
+          contactChat, 'userChats/${contact.userId}/$chatId');
+    }
+    final UserChat userChat = UserChat(
+        chatId: chatId,
+        chatName: contact.displayName,
+        chatPhotoUrl: contact.photoUrl,
+        lastMessage: '',
+        contactId: contact.userId);
+    await addOrUpdateModelByRef(userChat, 'userChats/$currUserId/$chatId');
+  }
+
+  Future<String?> getChatIdFromContact(
+      String currUserId, UserProfile contact) async {
+    final List<UserChat?> contactChats =
+        await getModelsListByRef<UserChat>('userChats/${contact.userId}');
+    String? chatId;
+    for (UserChat? contactChat in contactChats) {
+      if (contactChat?.contactId == currUserId) {
+        chatId = contactChat?.chatId;
+        break;
+      }
+    }
+    return chatId;
   }
 }

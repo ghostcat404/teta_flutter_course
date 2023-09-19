@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 final _mainRadius = BorderRadius.circular(8.0);
 final _mainColor = Colors.grey[300];
 
-
 class MessageWidgetShimmer extends StatelessWidget {
   const MessageWidgetShimmer({super.key});
 
@@ -20,25 +19,21 @@ class MessageWidgetShimmer extends StatelessWidget {
               Container(
                 width: 150,
                 height: 20,
-                decoration: BoxDecoration(
-                  color: _mainColor,
-                  borderRadius: _mainRadius
-                ),
+                decoration:
+                    BoxDecoration(color: _mainColor, borderRadius: _mainRadius),
               ),
-              const SizedBox(width: 6,),
+              const SizedBox(
+                width: 6,
+              ),
               Container(
                 width: 100,
                 height: 20,
-                decoration: BoxDecoration(
-                  color: _mainColor,
-                  borderRadius: _mainRadius
-                ),
+                decoration:
+                    BoxDecoration(color: _mainColor, borderRadius: _mainRadius),
               ),
             ],
           ),
-          const SizedBox(
-            height: 8
-          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -46,9 +41,7 @@ class MessageWidgetShimmer extends StatelessWidget {
                   width: 100,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: _mainColor,
-                    borderRadius: _mainRadius
-                  ),
+                      color: _mainColor, borderRadius: _mainRadius),
                 ),
               ),
             ],
@@ -70,43 +63,39 @@ class ListMessagesShimmer extends StatelessWidget {
         title: Container(
           width: 400,
           height: 30,
-          decoration: BoxDecoration(
-            color: _mainColor,
-            borderRadius: _mainRadius
-          ),
+          decoration:
+              BoxDecoration(color: _mainColor, borderRadius: _mainRadius),
         ),
       ),
       body: ListView.separated(
-        itemCount: 3,
-        reverse: true,
-        separatorBuilder: (BuildContext context, int index) => const Divider(),
-        itemBuilder: (context, index) {
-          return const MessageWidgetShimmer();
-        }
-      ),
+          itemCount: 3,
+          reverse: true,
+          separatorBuilder: (BuildContext context, int index) =>
+              const Divider(),
+          itemBuilder: (context, index) {
+            return const MessageWidgetShimmer();
+          }),
       bottomNavigationBar: Padding(
-        padding: MediaQuery.of(context).viewInsets,
-        child: Row(
-          children: [
-            const Expanded(
-              child: TextField(
-                style: TextStyle(fontSize: 16.0),
-                decoration: InputDecoration(
-                  floatingLabelBehavior: FloatingLabelBehavior.never,
-                  labelText: 'Message',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0)
-                )
+          padding: MediaQuery.of(context).viewInsets,
+          child: Row(
+            children: [
+              const Expanded(
+                child: TextField(
+                    style: TextStyle(fontSize: 16.0),
+                    decoration: InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        labelText: 'Message',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 8.0))),
               ),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.send),
-              color: Colors.blue[900],
-            )
-          ],
-        )
-      ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.send),
+                color: Colors.blue[900],
+              )
+            ],
+          )),
     );
   }
 }
